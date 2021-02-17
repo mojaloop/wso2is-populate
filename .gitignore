@@ -1,0 +1,10 @@
+.idea
+node_modules/
+.swp
+src/junit.xml
+src/.env
+.env
+/junit.xml
+
+# Coverage directory used by tools like jest
+coverage
