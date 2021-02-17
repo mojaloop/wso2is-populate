@@ -40,10 +40,10 @@ function configureAuthentication(client, authConfig) {
 async function makeRequest(client, type, route, data) {
     try {
         const response = await client[type](route, data);
-
         return (response && response.data) || null;
     } catch (error) {
         console.log(`${type.toUpperCase()} ${route} failed with error: ${error}`);
+        console.log(error && error.response && error.response.data);
 
         // 409 means that the target entry already exists in WSO2IS.
         if (error.response == null || error.response.status !== 409) {
@@ -77,6 +77,7 @@ class Client {
         this.client = axios;
         this.client.defaults.baseURL = this.url;
         this.client.defaults.headers['Content-Type'] = 'application/json';
+        this.client.defaults.headers.Accept = 'application/json';
         this.client.defaults.httpsAgent = new https.Agent({
             rejectUnauthorized: false,
         });
@@ -209,7 +210,10 @@ class Client {
         rolesWithUserIds.forEach((role) => {
             role.members.forEach((member) => {
                 if (member.value == null) {
-                    const foundUser = users.find(user => user.userName === member.display);
+                    let foundUser = null;
+                    if (users[0] != null) {
+                        foundUser = users.find(user => user.userName === member.display);
+                    }
 
                     if (foundUser) {
                         // eslint-disable-next-line no-param-reassign
