@@ -1,14 +1,14 @@
-FROM node:8.11.3-alpine AS builder
+FROM node:15-alpine3.13 AS builder
 
 RUN apk update && apk add git
 
 WORKDIR /src
 
-COPY ./src/package.json ./src/yarn.lock /src/
+COPY ./package.json ./package-lock.json /src/
 
-RUN yarn install --frozen-lockfile
+RUN npm ci
 
-FROM node:8.11.3-alpine
+FROM node:15-alpine3.13
 
 WORKDIR /src
 CMD ["node", "/src/index.js"]
