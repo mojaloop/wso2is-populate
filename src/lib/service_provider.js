@@ -186,7 +186,7 @@ const createApplication = async ({
             throw err;
         }
         const { status, data } = err.response;
-        contextLog('Error response from server: application already existed. Will overwrite configuration.', {
+        contextLog('Handled error response from authorization server: application already existed. Will overwrite configuration.', {
             request: createApplicationRequest,
             response: {
                 status,

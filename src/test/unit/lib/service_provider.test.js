@@ -4,8 +4,15 @@ const { parseStringPromise } = require('xml2js');
 const { createApplication } = require('../../../lib/service_provider');
 const { populate } = require('../../../index');
 const config = require('../../../config/client');
+
 config.application.clientKey = 'mock client key';
 config.application.clientSecret = 'mock client secret';
+
+const createArg = {
+    ...config.application,
+    ...config.http,
+    ...config.authentication.credentials,
+};
 
 jest.mock('../../../lib/Client');
 jest.mock('axios', () => ({
@@ -27,7 +34,7 @@ describe('createApplication', () => {
     });
 
     it('constructs an axios instance with the correct parameters', async () => {
-        await populate(config);
+        await createApplication(createArg);
         expect(axios.create.mock.calls.length).toEqual(1);
         const { username, password } = config.authentication.credentials;
         const { host, port } = config.http;
@@ -47,7 +54,7 @@ describe('createApplication', () => {
     });
 
     it('issues the correct application creation request', async () => {
-        await populate(config);
+        await createApplication(createArg);
         expect(axios.create.mock.calls.length).toEqual(1);
         const instance = axios.create.mock.results[0].value;
         expect(instance.mock.calls.length).toEqual(3);
@@ -74,7 +81,7 @@ describe('createApplication', () => {
     });
 
     it('issues the correct application get request', async () => {
-        await populate(config);
+        await createApplication(createArg);
         expect(axios.create.mock.calls.length).toEqual(1);
         const instance = axios.create.mock.results[0].value;
         expect(instance.mock.calls.length).toEqual(3);
@@ -98,7 +105,7 @@ describe('createApplication', () => {
     });
 
     it('issues the correct application update request', async () => {
-        await populate(config);
+        await createApplication(createArg);
         expect(axios.create.mock.calls.length).toEqual(1);
         const instance = axios.create.mock.results[0].value;
         expect(instance.mock.calls.length).toEqual(3);
@@ -164,22 +171,38 @@ describe('createApplication', () => {
     });
 
     it('correctly handles an application create when the application already exists', async () => {
-        // try {
+        let called = false;
         axios.create.mockImplementation(() => () => {
-            throw new Error({
-                response: {
-                    data: 'Already an application available with the same name',
-                },
-            });
+            // The first time we're called we'll reject with this specific result, subsequent
+            // requests should resolve.
+            if (!called) {
+                called = true;
+                // eslint-disable-next-line prefer-promise-reject-errors
+                return Promise.reject({
+                    response: {
+                        data: 'Already an application available with the same name',
+                    },
+                });
+            }
+
+            return {
+                status: 200,
+                data: `<ax1234:applicationID>${mockApplicationId}</ax1234:applicationID>`,
+            };
         });
-        await expect(Promise.reject(new Error('octopus'))).rejects.toThrow('octopus');
-        await populate(config).rejects.toThrow(expect.anything());
-        // } catch (err) {
-        //
-        // }
+        await createApplication(createArg);
     });
 
-    // it('throws when there is a failure to match the application id', async () => {
-    //
-    // });
+    it('throws when there is a failure to match the application id', async () => {
+        axios.create.mockImplementation(() => () => ({ status: 200, data: '' }));
+        await expect(createApplication(createArg)).rejects.toThrow('Expected exactly one match for applicationID, found 0');
+    });
+
+    it('throws when multiple application ids are found', async () => {
+        axios.create.mockImplementation(() => () => ({
+            status: 200,
+            data: `<ax1234:applicationID>${mockApplicationId}</ax1234:applicationID><ax1234:applicationID>${mockApplicationId}</ax1234:applicationID>`,
+        }));
+        await expect(createApplication(createArg)).rejects.toThrow('Expected exactly one match for applicationID, found 2');
+    });
 });
