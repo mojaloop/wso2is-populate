@@ -341,56 +341,6 @@ describe('Client', () => {
                                     }).toThrow();
                                 });
 
-                                describe('property `type` is:', () => {
-                                    it('missing.', () => {
-                                        expect(() => {
-                                            delete invalidConfig.authentication.type;
-
-                                            client = new Client(invalidConfig);
-                                        }).toThrow();
-                                    });
-
-                                    it('null.', () => {
-                                        expect(() => {
-                                            invalidConfig.authentication.type = null;
-
-                                            client = new Client(invalidConfig);
-                                        }).toThrow();
-                                    });
-
-                                    it('number.', () => {
-                                        expect(() => {
-                                            invalidConfig.authentication.type = 33;
-
-                                            client = new Client(invalidConfig);
-                                        }).toThrow();
-                                    });
-
-                                    it('empty string.', () => {
-                                        expect(() => {
-                                            invalidConfig.authentication.type = '';
-
-                                            client = new Client(invalidConfig);
-                                        }).toThrow();
-                                    });
-
-                                    it('object.', () => {
-                                        expect(() => {
-                                            invalidConfig.authentication.type = {};
-
-                                            client = new Client(invalidConfig);
-                                        }).toThrow();
-                                    });
-
-                                    it('function.', () => {
-                                        expect(() => {
-                                            invalidConfig.authentication.type = () => {};
-
-                                            client = new Client(invalidConfig);
-                                        }).toThrow();
-                                    });
-                                });
-
                                 describe('property `credentials` is:', () => {
                                     it('missing.', () => {
                                         expect(() => {

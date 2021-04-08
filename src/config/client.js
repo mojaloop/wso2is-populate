@@ -12,7 +12,6 @@ module.exports = {
         timeout: process.env.HTTP_TIMEOUT || 60000,
     },
     authentication: {
-        type: process.env.AUTHENTICATION_TYPE || 'basic',
         credentials: process.env.AUTHENTICATION_CREDENTIALS || {
             username: process.env.AUTHENTICATION_CREDENTIALS_USERNAME || 'admin',
             password: process.env.AUTHENTICATION_CREDENTIALS_PASSWORD || 'admin',

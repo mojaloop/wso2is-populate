@@ -21,7 +21,6 @@ function validateHTTPConfig(config) {
 
 function validateAuthConfig(config) {
     return check.nonEmptyObject(config)
-        && check.nonEmptyString(config.type)
         && check.object(config.credentials);
 }
 
@@ -29,12 +28,6 @@ function validateConfiguration(config) {
     return check.assert.nonEmptyObject(config, 'Invalid configuration.')
         && check.assert(validateHTTPConfig(config.http), 'Invalid HTTP configuration.')
         && check.assert(validateAuthConfig(config.authentication), 'Invalid Authentication configuration.');
-}
-
-function configureAuthentication(client, authConfig) {
-    if (authConfig.type === AUTHENTICATION_TYPES.BASIC) {
-        axios.defaults.auth = authConfig.credentials;
-    }
 }
 
 async function makeRequest(client, type, route, data) {
@@ -81,8 +74,7 @@ class Client {
         this.client.defaults.httpsAgent = new https.Agent({
             rejectUnauthorized: false,
         });
-
-        configureAuthentication(this.client, config.authentication);
+        this.client.defaults.auth = config.authentication.credentials;
     }
 
     /**
@@ -184,13 +176,7 @@ class Client {
      * @returns {Array} The added roles' data if returned by the API.
      */
     async addRoles(data) {
-        const promises = [];
-
-        data.forEach((role) => {
-            promises.push(this.addRole(role));
-        });
-
-        return Promise.all(promises);
+        return Promise.all(data.map(role => this.addRole(role)));
     }
 
     /**
