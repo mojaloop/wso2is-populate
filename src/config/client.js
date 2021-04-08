@@ -18,4 +18,9 @@ module.exports = {
             password: process.env.AUTHENTICATION_CREDENTIALS_PASSWORD || 'admin',
         },
     },
+    application: {
+        name: process.env.APPLICATION_NAME || 'mfpserviceprovider',
+        clientKey: process.env.CLIENT_KEY,
+        clientSecret: process.env.CLIENT_SECRET,
+    },
 };
