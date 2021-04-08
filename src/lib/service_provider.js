@@ -5,7 +5,7 @@ const util = require('util');
 
 const requestBuilders = {
     // https://docs.wso2.com/display/IS570/Using+the+Service+Provider+API#UsingtheServiceProviderAPI-createApplication
-    createApplication: ({ applicationName }) => ({
+    createApplication: ({ name }) => ({
         headers: {
             SOAPAction: 'urn:createApplication',
         },
@@ -17,7 +17,7 @@ const requestBuilders = {
                      <!--Optional:-->
                      <xsd:serviceProvider>
                         <!--Optional:-->
-                        <xsd1:applicationName>${applicationName}</xsd1:applicationName>
+                        <xsd1:applicationName>${name}</xsd1:applicationName>
                      </xsd:serviceProvider>
                   </xsd:createApplication>
                </soapenv:Body>
@@ -25,7 +25,7 @@ const requestBuilders = {
     }),
 
     // https://docs.wso2.com/display/IS570/Using+the+Service+Provider+API#UsingtheServiceProviderAPI-getApplication
-    getApplication: ({ applicationName }) => ({
+    getApplication: ({ name }) => ({
         headers: {
             SOAPAction: 'urn:getApplication',
         },
@@ -35,25 +35,16 @@ const requestBuilders = {
                <soapenv:Body>
                   <xsd:getApplication>
                      <!--Optional:-->
-                     <xsd:applicationName>${applicationName}</xsd:applicationName>
+                     <xsd:applicationName>${name}</xsd:applicationName>
                   </xsd:getApplication>
                </soapenv:Body>
             </soapenv:Envelope>`,
-            // `<soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:xsd="http://org.apache.axis2/xsd">
-            //    <soapenv:Header/>
-            //    <soapenv:Body>
-            //       <xsd:getApplication>
-            //          <!--Optional:-->
-            //          <xsd:applicationName>${applicationName}</xsd:applicationName>
-            //       </xsd:getApplication>
-            //    </soapenv:Body>
-            // </soapenv:Envelope>`,
     }),
 
     // https://docs.wso2.com/display/IS570/Using+the+Service+Provider+API#UsingtheServiceProviderAPI-updateApplication
     updateApplication: ({
         applicationId,
-        applicationName,
+        name,
         clientKey,
         clientSecret,
     }) => ({
@@ -70,13 +61,13 @@ const requestBuilders = {
                         <!--Optional:-->
                         <xsd1:applicationID>${applicationId}</xsd1:applicationID>
                         <!--Optional:-->
-                        <xsd1:applicationName>${applicationName}</xsd1:applicationName>
+                        <xsd1:applicationName>${name}</xsd1:applicationName>
                         <!--Optional:-->
                         <xsd1:inboundAuthenticationConfig>
                            <!--Zero or more repetitions:-->
                            <xsd1:inboundAuthenticationRequestConfigs>
                               <!--Optional:-->
-                              <xsd1:inboundAuthKey>${applicationName}</xsd1:inboundAuthKey>
+                              <xsd1:inboundAuthKey>${name}</xsd1:inboundAuthKey>
                               <!--Optional:-->
                               <xsd1:inboundAuthType>openid</xsd1:inboundAuthType>
                            </xsd1:inboundAuthenticationRequestConfigs>
@@ -131,19 +122,25 @@ const contextLog = (msg, data) => console.log(
  * @func createApplication
  */
 const createApplication = async ({
-    applicationName,
+    name,
     clientKey,
     clientSecret,
-    hostname = 'https://localhost',
+    host = 'https://localhost',
     port = 9443,
     username = 'admin',
     password = 'admin',
 }) => {
+    assert(name, 'name parameter is required');
+    assert(clientKey, 'clientKey parameter is required');
+    assert(clientSecret, 'clientSecret parameter is required');
+    // TODO: what do clientKey and clientSecret actually have to look like? Some values are not
+    // acceptable to WSO2.
+
     contextLog('Creating WSO2 application with configuration:', {
-        applicationName,
+        name,
         clientKey,
         clientSecret,
-        hostname,
+        host,
         port,
         username,
         password,
@@ -161,7 +158,7 @@ const createApplication = async ({
             username,
             password,
         },
-        baseURL: `${hostname}:${port}/services/IdentityApplicationManagementService`,
+        baseURL: `${host}:${port}/services/IdentityApplicationManagementService`,
         httpsAgent: new https.Agent({
             rejectUnauthorized: false,
         }),
@@ -172,7 +169,7 @@ const createApplication = async ({
 
     // Create the application
 
-    const createApplicationRequest = requestBuilders.createApplication({ applicationName });
+    const createApplicationRequest = requestBuilders.createApplication({ name });
     try {
         const { status, data } = await a(createApplicationRequest);
         contextLog('Created application', {
@@ -215,18 +212,18 @@ const createApplication = async ({
     //       2. Update the service provider with other configurations using the updateApplication
     //          operation. The service provider's application ID is required for this request.
 
-    const getApplicationRequest = requestBuilders.getApplication({ applicationName });
+    const getApplicationRequest = requestBuilders.getApplication({ name });
     const getResponse = await a(getApplicationRequest);
 
     const applicationId = (() => {
         const r = /<[^:/]*:applicationID>([0-9]+)<\/[^:]*:applicationID>/g;
 
         const matches = [...getResponse.data.matchAll(r)];
-        // Expect to find only one XML tag matching something like
+        // Expect to find exactly one XML tag matching something like
         // <ax1234:applicationID>777</ax1234:applicationID>
-        assert.equal(matches.length, 1, 'Expected only a single match for applicationID');
-        // Expect to match only one group
-        assert.equal(matches[0].length, 2, 'Expected only a single group match for applicationID');
+        assert.equal(matches.length, 1, `Expected exactly one match for applicationID, found ${matches.length}`);
+        // Expect to match exactly one group
+        assert.equal(matches[0].length, 2, `Expected exactly one group match for applicationID, found ${matches[0].length}`);
         return matches[0][1];
     })();
 
@@ -245,7 +242,7 @@ const createApplication = async ({
 
     const updateApplicationRequest = requestBuilders.updateApplication({
         applicationId,
-        applicationName,
+        name,
         clientKey,
         clientSecret,
     });
