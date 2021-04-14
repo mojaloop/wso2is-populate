@@ -1,0 +1,15 @@
+name: CI
+
+on: [push, pull_request]
+
+jobs:
+  test-action:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v2
+    - name: Run Kubernetes tools
+      uses: stefanprodan/kube-tools@v1
+      with:
+        kustomize: 3.10.0
+        command: |
+          find integration_test/manifests -maxdepth 1 -mindepth 1 -type d | while read dir; do kustomize build $dir | kubeval --strict; done
