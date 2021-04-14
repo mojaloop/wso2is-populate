@@ -9,8 +9,9 @@ const REQUEST_METHODS = {
 
 function validateConfiguration(config) {
     return check.assert.nonEmptyObject(config, 'Invalid configuration.')
-        && check.nonEmptyString(config.host, 'Invalid host.')
-        && check.nonEmptyObject(config.credentials, 'Invalid credentials.');
+        && check.assert.nonEmptyString(config.host, 'Invalid host.')
+        && check.assert.nonEmptyString(config?.credentials?.password, 'Invalid password.')
+        && check.assert.nonEmptyString(config?.credentials?.username, 'Invalid username.');
 }
 
 async function makeRequest(client, type, route, data) {

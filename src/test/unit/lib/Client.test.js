@@ -63,10 +63,10 @@ describe('Client', () => {
                             }).toThrow();
                         });
 
-                        describe('property `http` is:', () => {
+                        describe('property `host` is:', () => {
                             it('missing.', () => {
                                 expect(() => {
-                                    delete invalidConfig.http;
+                                    delete invalidConfig.host;
 
                                     client = new Client(invalidConfig);
                                 }).toThrow();
@@ -74,7 +74,7 @@ describe('Client', () => {
 
                             it('null.', () => {
                                 expect(() => {
-                                    invalidConfig.http = null;
+                                    invalidConfig.host = null;
 
                                     client = new Client(invalidConfig);
                                 }).toThrow();
@@ -82,15 +82,7 @@ describe('Client', () => {
 
                             it('number.', () => {
                                 expect(() => {
-                                    invalidConfig.http = 33;
-
-                                    client = new Client(invalidConfig);
-                                }).toThrow();
-                            });
-
-                            it('string.', () => {
-                                expect(() => {
-                                    invalidConfig.http = 'foo';
+                                    invalidConfig.host = 33;
 
                                     client = new Client(invalidConfig);
                                 }).toThrow();
@@ -98,203 +90,25 @@ describe('Client', () => {
 
                             it('function.', () => {
                                 expect(() => {
-                                    invalidConfig.http = () => {};
+                                    invalidConfig.host = () => {};
 
                                     client = new Client(invalidConfig);
                                 }).toThrow();
                             });
 
-                            describe('object but:', () => {
-                                it('empty.', () => {
-                                    expect(() => {
-                                        invalidConfig.http = {};
+                            it('object.', () => {
+                                expect(() => {
+                                    invalidConfig.host = {};
 
-                                        client = new Client({});
-                                    }).toThrow();
-                                });
-
-                                describe('property `host` is:', () => {
-                                    it('missing.', () => {
-                                        expect(() => {
-                                            delete invalidConfig.http.host;
-
-                                            client = new Client(invalidConfig);
-                                        }).toThrow();
-                                    });
-
-                                    it('null.', () => {
-                                        expect(() => {
-                                            invalidConfig.http.host = null;
-
-                                            client = new Client(invalidConfig);
-                                        }).toThrow();
-                                    });
-
-                                    it('number.', () => {
-                                        expect(() => {
-                                            invalidConfig.http.host = 33;
-
-                                            client = new Client(invalidConfig);
-                                        }).toThrow();
-                                    });
-
-                                    it('empty string.', () => {
-                                        expect(() => {
-                                            invalidConfig.http.host = '';
-
-                                            client = new Client(invalidConfig);
-                                        }).toThrow();
-                                    });
-
-                                    it('object.', () => {
-                                        expect(() => {
-                                            invalidConfig.http.host = {};
-
-                                            client = new Client(invalidConfig);
-                                        }).toThrow();
-                                    });
-
-                                    it('function.', () => {
-                                        expect(() => {
-                                            invalidConfig.http.host = () => {};
-
-                                            client = new Client(invalidConfig);
-                                        }).toThrow();
-                                    });
-                                });
-
-                                describe('property `port` is:', () => {
-                                    it('missing.', () => {
-                                        expect(() => {
-                                            delete invalidConfig.http.port;
-
-                                            client = new Client(invalidConfig);
-                                        }).toThrow();
-                                    });
-
-                                    it('null.', () => {
-                                        expect(() => {
-                                            invalidConfig.http.port = null;
-
-                                            client = new Client(invalidConfig);
-                                        }).toThrow();
-                                    });
-
-                                    it('string.', () => {
-                                        expect(() => {
-                                            invalidConfig.http.port = 'foo';
-
-                                            client = new Client(invalidConfig);
-                                        }).toThrow();
-                                    });
-
-                                    it('negative number.', () => {
-                                        expect(() => {
-                                            invalidConfig.http.port = -123;
-
-                                            client = new Client(invalidConfig);
-                                        }).toThrow();
-                                    });
-
-                                    it('object.', () => {
-                                        expect(() => {
-                                            invalidConfig.http.port = {};
-
-                                            client = new Client(invalidConfig);
-                                        }).toThrow();
-                                    });
-
-                                    it('function.', () => {
-                                        expect(() => {
-                                            invalidConfig.http.port = () => {};
-
-                                            client = new Client(invalidConfig);
-                                        }).toThrow();
-                                    });
-                                });
-
-                                describe('property `endpoint` is:', () => {
-                                    it('number.', () => {
-                                        expect(() => {
-                                            invalidConfig.http.endpoint = 33;
-
-                                            client = new Client(invalidConfig);
-                                        }).toThrow();
-                                    });
-
-                                    it('object.', () => {
-                                        expect(() => {
-                                            invalidConfig.http.endpoint = {};
-
-                                            client = new Client(invalidConfig);
-                                        }).toThrow();
-                                    });
-
-                                    it('function.', () => {
-                                        expect(() => {
-                                            invalidConfig.http.endpoint = () => {};
-
-                                            client = new Client(invalidConfig);
-                                        }).toThrow();
-                                    });
-                                });
-
-                                describe('property `timeout` is:', () => {
-                                    it('missing.', () => {
-                                        expect(() => {
-                                            delete invalidConfig.http.timeout;
-
-                                            client = new Client(invalidConfig);
-                                        }).toThrow();
-                                    });
-
-                                    it('null.', () => {
-                                        expect(() => {
-                                            invalidConfig.http.timeout = null;
-
-                                            client = new Client(invalidConfig);
-                                        }).toThrow();
-                                    });
-
-                                    it('string.', () => {
-                                        expect(() => {
-                                            invalidConfig.http.timeout = 'foo';
-
-                                            client = new Client(invalidConfig);
-                                        }).toThrow();
-                                    });
-
-                                    it('negative number.', () => {
-                                        expect(() => {
-                                            invalidConfig.http.timeout = -123;
-
-                                            client = new Client(invalidConfig);
-                                        }).toThrow();
-                                    });
-
-                                    it('object.', () => {
-                                        expect(() => {
-                                            invalidConfig.http.timeout = {};
-
-                                            client = new Client(invalidConfig);
-                                        }).toThrow();
-                                    });
-
-                                    it('function.', () => {
-                                        expect(() => {
-                                            invalidConfig.http.timeout = () => {};
-
-                                            client = new Client(invalidConfig);
-                                        }).toThrow();
-                                    });
-                                });
+                                    client = new Client(invalidConfig);
+                                }).toThrow();
                             });
                         });
 
-                        describe('property `authentication` is:', () => {
+                        describe('property `credentials` is:', () => {
                             it('missing.', () => {
                                 expect(() => {
-                                    delete invalidConfig.authentication;
+                                    delete invalidConfig.credentials;
 
                                     client = new Client(invalidConfig);
                                 }).toThrow();
@@ -302,7 +116,7 @@ describe('Client', () => {
 
                             it('null.', () => {
                                 expect(() => {
-                                    invalidConfig.authentication = null;
+                                    invalidConfig.credentials = null;
 
                                     client = new Client(invalidConfig);
                                 }).toThrow();
@@ -310,7 +124,7 @@ describe('Client', () => {
 
                             it('number.', () => {
                                 expect(() => {
-                                    invalidConfig.authentication = 33;
+                                    invalidConfig.credentials = 33;
 
                                     client = new Client(invalidConfig);
                                 }).toThrow();
@@ -318,7 +132,7 @@ describe('Client', () => {
 
                             it('string.', () => {
                                 expect(() => {
-                                    invalidConfig.authentication = 'foo';
+                                    invalidConfig.credentials = 'foo';
 
                                     client = new Client(invalidConfig);
                                 }).toThrow();
@@ -326,53 +140,26 @@ describe('Client', () => {
 
                             it('function.', () => {
                                 expect(() => {
-                                    invalidConfig.authentication = () => {};
+                                    invalidConfig.credentials = () => {};
 
                                     client = new Client(invalidConfig);
                                 }).toThrow();
                             });
 
                             describe('object but:', () => {
-                                it('empty.', () => {
+                                it('property `username` is missing', () => {
                                     expect(() => {
-                                        invalidConfig.authentication = {};
+                                        delete invalidConfig.credentials.username;
 
-                                        client = new Client({});
+                                        client = new Client(invalidConfig);
                                     }).toThrow();
                                 });
+                                it('property `password` is missing', () => {
+                                    expect(() => {
+                                        delete invalidConfig.credentials.password;
 
-                                describe('property `credentials` is:', () => {
-                                    it('missing.', () => {
-                                        expect(() => {
-                                            delete invalidConfig.authentication.credentials;
-
-                                            client = new Client(invalidConfig);
-                                        }).toThrow();
-                                    });
-
-                                    it('null.', () => {
-                                        expect(() => {
-                                            invalidConfig.authentication.credentials = null;
-
-                                            client = new Client(invalidConfig);
-                                        }).toThrow();
-                                    });
-
-                                    it('string.', () => {
-                                        expect(() => {
-                                            invalidConfig.authentication.credentials = 'foo';
-
-                                            client = new Client(invalidConfig);
-                                        }).toThrow();
-                                    });
-
-                                    it('function.', () => {
-                                        expect(() => {
-                                            invalidConfig.authentication.credentials = () => {};
-
-                                            client = new Client(invalidConfig);
-                                        }).toThrow();
-                                    });
+                                        client = new Client(invalidConfig);
+                                    }).toThrow();
                                 });
                             });
                         });
