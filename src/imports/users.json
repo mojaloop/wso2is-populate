@@ -3,13 +3,13 @@
     "name": "portaladmin",
     "password": "mcvV2KYw9eKPqNagjGy6",
     "roles": [
-        "portaladmin",
+        "write_ndc",
         "portaluser"
     ]
   },
   {
     "name": "portaluser",
-    "password": "mcvV2KYw9eKPqNagjGy6",
+    "password": "mcvV2KYw9eKPqNagjGy5",
     "roles": [
         "portaluser"
     ]
