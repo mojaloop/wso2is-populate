@@ -1,0 +1,3 @@
+resources:
+- ../manifests/backend
+- ../manifests/wso2is
