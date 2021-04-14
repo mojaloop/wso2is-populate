@@ -17,3 +17,6 @@ spec:
         image: mojaloop/finance-portal-backend-service
         ports:
         - containerPort: 3002
+        envFrom:
+        - configMapRef:
+            name: portal-backend
