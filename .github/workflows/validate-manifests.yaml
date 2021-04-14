@@ -1,4 +1,4 @@
-name: CI
+name: Validate manifests
 
 on: [push, pull_request]
 
