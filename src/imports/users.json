@@ -3,7 +3,7 @@
     "name": "portaladmin",
     "password": "mcvV2KYw9eKPqNagjGy6",
     "roles": [
-        "write_ndc",
+        "ndc_write",
         "portaluser"
     ]
   },
