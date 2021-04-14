@@ -38,7 +38,7 @@ jobs:
       run: kubectl logs -f jobs/wso2is-populate
 
     - name: Print resources
-      run: kubectl get svc,deploy,configmap,job -A
+      run: kubectl get svc,deploy,configmap,job,pod -A
 
     - name: Wait for populate to complete
       run: kubectl wait --for=condition=complete jobs/wso2is-populate
