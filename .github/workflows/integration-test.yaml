@@ -29,7 +29,7 @@ jobs:
           wso2ispopulate-integration-test
 
     - name: Deploy
-      run: skaffold deploy
+      run: skaffold run
 
     - name: Wait for populate to complete
       run: kubectl wait --for=condition=complete jobs/wso2is-populate
