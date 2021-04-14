@@ -1,9 +1,9 @@
 [
   {
-    "schemas": [],
-    "name": {"familyName": "Mowali Financial Portal", "givenName": "Admin"},
-    "userName": "mfpadmin",
+    "name": "portaladmin",
     "password": "mcvV2KYw9eKPqNagjGy6",
-    "emails": []
+    "roles": [
+        "portaladmin"
+    ]
   }
 ]
