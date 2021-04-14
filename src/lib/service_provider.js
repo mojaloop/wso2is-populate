@@ -122,29 +122,159 @@ const contextLog = (msg, data) => console.log(
  * @func createApplication
  */
 const createApplication = async ({
-    name,
-    clientKey,
-    clientSecret,
+    client_name: name,
+    ext_param_client_id: clientKey,
+    ext_param_client_secret: clientSecret,
     host = 'https://localhost',
     port = 9443,
     username = 'admin',
     password = 'admin',
 }) => {
     assert(name, 'name parameter is required');
-    assert(clientKey, 'clientKey parameter is required');
     assert(clientSecret, 'clientSecret parameter is required');
-    // TODO: what do clientKey and clientSecret actually have to look like? Some values are not
-    // acceptable to WSO2.
+    const reStr = '^[a-zA-Z0-9_]{15,30}$';
+    const re = new RegExp(reStr);
+    assert(re.test(clientKey), `client key must pass regex test for ${reStr}`);
 
     contextLog('Creating WSO2 application with configuration:', {
-        name,
-        clientKey,
-        clientSecret,
+        client_name,
+        ext_param_client_id,
+        ext_param_client_secret,
         host,
         port,
         username,
         password,
     });
+
+    try {
+        // https://docs.wso2.com/display/IS570/apidocs/OAuth2-dynamic-client-registration/#!/operations#OAuth2DCR#registerApplication
+        const result = await axios({
+            method: 'post',
+            url: `${host}:${port}/api/identity/oauth2/dcr/v1.1/register`,
+            auth: {
+                username,
+                password,
+            },
+            data: {
+                ext_param_client_id,
+                ext_param_client_secret,
+                client_name,
+                "grant_types": ["password"],
+            }
+        });
+        console.log('Created application');
+    } catch (err) {
+        if (!err.response.data.error_description === 'Application with the name mfpserviceprovider already exist in the system') {
+            throw err;
+        }
+        console.log('WARNING: Application already existed, no checks are performed for correct configuration');
+    }
+
+    const createUserRequestWang = {
+        auth: {
+            username,
+            password,
+        },
+        method: 'post',
+        headers: {
+            SOAPAction: 'urn:addUser',
+            'Content-Type': 'text/xml',
+        },
+        url: `${host}:${port}/services/RemoteUserStoreManagerService`,
+        data:
+            `<soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:ser="http://service.ws.um.carbon.wso2.org" xmlns:xsd="http://common.mgt.user.carbon.wso2.org/xsd">
+                <soapenv:Header/>
+                <soapenv:Body>
+                    <ser:addUser>
+                        <ser:userName>mfpadmin</ser:userName>
+                        <ser:credential>mcvV2KYw9eKPqNagjGy6</ser:credential>
+                        <ser:roleList>Application/mfpserviceprovider</ser:roleList>
+                        <ser:profileName>default</ser:profileName>
+                        <ser:requirePasswordChange>false</ser:requirePasswordChange>
+                    </ser:addUser>
+                </soapenv:Body>
+            </soapenv:Envelope>`
+    };
+    try {
+        const createUserResponseWang = await axios(createUserRequestWang);
+        contextLog('Created user', {
+            request: createUserRequestWang,
+            response: {
+                status: createUserResponseWang.status,
+                data: createUserResponseWang.data,
+            },
+        });
+    } catch (err) {
+        console.log(createUserRequestWang);
+        // console.log(err);
+        console.log(err.response.status);
+        console.log(err.response.data);
+    }
+
+    return;
+
+    const something = await axios({
+        method: 'post',
+        url: `${host}:${port}/client-registration/v0.14/register/`,
+        auth: {
+            username,
+            password,
+        },
+        data: {
+            "callbackUrl": "",
+            "clientName": "mfpserviceprovider",
+            "owner": "admin",
+            "grantType": "refresh_token urn:ietf:params:oauth:grant-type:saml2-bearer password client_credentials iwa:ntlm urn:ietf:params:oauth:grant-type:jwt-bearer",
+            "saasApp": true
+        }
+    });
+
+    return;
+
+    console.log(something);
+
+    const createUserRequest = {
+        auth: {
+            username,
+            password,
+        },
+        method: 'post',
+        headers: {
+            SOAPAction: 'urn:addUser',
+            'Content-Type': 'text/xml',
+        },
+        url: `${host}:${port}/services/RemoteUserStoreManagerService`,
+        data:
+            `<soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:ser="http://service.ws.um.carbon.wso2.org" xmlns:xsd="http://common.mgt.user.carbon.wso2.org/xsd">
+                <soapenv:Header/>
+                <soapenv:Body>
+                    <ser:addUser>
+                        <ser:userName>mfpadmin</ser:userName>
+                        <ser:credential>mcvV2KYw9eKPqNagjGy6</ser:credential>
+                        <ser:roleList>Application/admin_mfpserviceprovider</ser:roleList>
+                        <ser:profileName>default</ser:profileName>
+                        <ser:requirePasswordChange>false</ser:requirePasswordChange>
+                    </ser:addUser>
+                </soapenv:Body>
+            </soapenv:Envelope>`
+    };
+    try {
+        const createUserResponse = await axios(createUserRequest);
+        contextLog('Created user', {
+            request: createUserRequest,
+            response: {
+                status: createUserResponse.status,
+                data: createUserResponse.data,
+            },
+        });
+    } catch (err) {
+        console.log(createUserRequest);
+        // console.log(err);
+        console.log(err.response.status);
+        console.log(err.response.data);
+    }
+
+    return;
 
     const a = axios.create({
         headers: {
@@ -254,6 +384,7 @@ const createApplication = async ({
             data: updateResponse.data,
         },
     });
+
 };
 
 module.exports = {
