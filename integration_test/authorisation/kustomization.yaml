@@ -1,3 +1,25 @@
 resources:
 - ../manifests/backend
 - ../manifests/wso2is
+- ../manifests/wso2is-populate
+
+configMapGenerator:
+- name: oauth-app-credentials
+  literals:
+  - AUTH_SERVER_CLIENTKEY=fv0xZxstzo2_qVcqMRFpLI43xm8mZZ
+  - AUTH_SERVER_CLIENTSECRET=CJvf1mQxQdLqWLYuNvAicRd6iBMQo5
+
+patches:
+- patch: |-
+    apiVersion: batch/v1
+    kind: Job
+    metadata:
+      name: wso2is-populate
+    spec:
+      template:
+        spec:
+          containers:
+          - name: job
+            envFrom:
+            - configMapRef:
+                name: oauth-app-credentials
