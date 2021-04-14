@@ -32,7 +32,9 @@ jobs:
       run: skaffold run
 
     - name: Wait for wso2is to come up
-      run: time kubectl wait --for=condition=available --timeout=180s deploy/wso2is
+      run: |-
+        time kubectl wait --for=condition=available --timeout=180s deploy/wso2is
+        time kubectl rollout status -w --timeout=180s deploy/wso2is
 
     - name: Tail job logs
       run: kubectl logs -f jobs/wso2is-populate
