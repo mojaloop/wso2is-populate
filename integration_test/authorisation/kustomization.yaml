@@ -1,5 +1,5 @@
 resources:
-- ../manifests/backend
+- ../manifests/portal-backend
 - ../manifests/wso2is
 - ../manifests/wso2is-populate
 
@@ -8,6 +8,9 @@ configMapGenerator:
   literals:
   - AUTH_SERVER_CLIENTKEY=fv0xZxstzo2_qVcqMRFpLI43xm8mZZ
   - AUTH_SERVER_CLIENTSECRET=CJvf1mQxQdLqWLYuNvAicRd6iBMQo5
+- name: wso2is-populate
+  literals:
+  - WSO2_HOST=https://wso2is:9443
 
 patches:
 - patch: |-
@@ -23,3 +26,5 @@ patches:
             envFrom:
             - configMapRef:
                 name: oauth-app-credentials
+            - configMapRef:
+                name: wso2is-populate
