@@ -54,7 +54,7 @@ const createOAuth2Application = async ({
         });
         contextLog('Created application', { status, data });
     } catch (err) {
-        if (err.response.data.error_description !== 'Application with the name mfpserviceprovider already exist in the system') {
+        if (err?.response?.data?.error_description !== 'Application with the name mfpserviceprovider already exist in the system') {
             throw err;
         }
         const { status, data } = err.response;
