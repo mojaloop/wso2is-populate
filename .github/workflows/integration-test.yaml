@@ -1,0 +1,35 @@
+name: Unit test
+on: push
+jobs:
+  integration-test:
+    timeout-minutes: 10
+    runs-on: ubuntu-20.04
+
+    steps:
+
+    - name: Checkout repository
+      uses: actions/checkout@v2
+
+    - name: Install k3d
+      run: |-
+        curl -Lo k3d https://github.com/rancher/k3d/releases/download/v4.4.1/k3d-linux-amd64
+        install k3d /usr/local/bin/
+
+    - name: Install Skaffold
+      run:
+        curl -Lo skaffold https://storage.googleapis.com/skaffold/releases/v1.21.0/skaffold-linux-amd64
+        install skaffold /usr/local/bin/
+
+    - name: Start cluster
+      run: |-
+        k3d cluster create \
+          --kubeconfig-update-default \
+          --kubeconfig-switch-context \
+          --image=rancher/k3s:v1.20.5-k3s1 \
+          wso2ispopulate-integration-test
+
+    - name: Deploy
+      run: skaffold deploy
+
+    - name: Wait for populate to complete
+      run: kubectl wait --for=condition=complete jobs/wso2is-populate

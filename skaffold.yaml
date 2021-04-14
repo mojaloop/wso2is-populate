@@ -1,0 +1,13 @@
+apiVersion: skaffold/v2beta12
+kind: Config
+metadata:
+  name: wso-is-populate
+build:
+  artifacts:
+  - image: ghcr.io/modusintegration/wso2is-populate
+    docker:
+      dockerfile: Dockerfile
+deploy:
+  kustomize:
+    paths:
+    - integration_test/authorisation
