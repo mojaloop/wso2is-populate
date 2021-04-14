@@ -1,15 +1,17 @@
 const Client = require('./lib/Client');
 const config = require('./config/client');
-const users = require('./imports/users');
+const defaultUsers = require('./lib/users');
 const { createOAuth2Application, createOAuth2Users } = require('./lib/api');
 const contextLog = require('./lib/contextLog');
 
-async function populate(conf) {
+async function populate(conf, users) {
     contextLog('Beginning WSO2 IS populate. Config:', conf);
+    contextLog('Users:', users);
 
     const instance = new Client(conf);
 
-    const roles = users.flatMap(user => user.roles.map(role => ({ displayName: role })));
+    const roles = [...(new Set(users.flatMap(user => user.roles)))]
+        .map(role => ({ displayName: role }));
     contextLog('Creating roles:', roles.map(r => r.displayName));
     await instance.addRoles(roles);
 
@@ -30,5 +32,5 @@ async function populate(conf) {
 module.exports = { populate };
 
 if (require.main === module) {
-    populate(config);
+    populate(config, defaultUsers.load());
 }

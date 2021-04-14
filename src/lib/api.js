@@ -23,9 +23,7 @@ const createOAuth2Application = async ({
 }) => {
     assert(client_name, 'name parameter is required');
     assert(ext_param_client_secret, 'clientSecret parameter is required');
-    const reStr = '^[a-zA-Z0-9_]{15,30}$';
-    const re = new RegExp(reStr);
-    assert(re.test(ext_param_client_id), `client key must pass regex test for ${reStr}`);
+    assert.match(ext_param_client_id, /^[a-zA-Z0-9_]{15,30}$/, 'clientKey invalid');
 
     contextLog('Creating WSO2 application with configuration:', {
         client_name,
@@ -65,6 +63,17 @@ const createOAuth2Application = async ({
     }
 };
 
+/**
+ * Create WSO2 users that will consume an OAuth2 application/service provider, typically created
+ * with createOAuth2ServiceProvider above.
+ *
+ * The created users will be configured to use OAuth2 inbound authentication as per the steps here:
+ * https://github.com/modusintegration/finance-portal-settlements/tree/8d489300b0f31031059f538c5b486fc90b57ccf7#run-services.
+ * Note that this function should make that documentation redundant, therefore it will likely be
+ * removed.
+ *
+ * @func createOAuth2Users
+ */
 const createOAuth2Users = async ({
     users,
     oauth2ApplicationName,
@@ -72,6 +81,9 @@ const createOAuth2Users = async ({
     username = 'admin',
     password = 'admin',
 }) => {
+    assert(Array.isArray(users), 'users is a required parameter, and must be an array');
+    assert.ok(oauth2ApplicationName, 'oauth2ApplicationName is a required parameter');
+
     contextLog('Creating WSO2 users with configuration:', {
         users,
         host,
@@ -80,7 +92,8 @@ const createOAuth2Users = async ({
     });
 
     return Promise.all(users.map(async user => {
-        const roleList = [`Application/${oauth2ApplicationName}`, ...user.roles]
+        // dedupe roles
+        const roleList = [...(new Set([`Application/${oauth2ApplicationName}`, ...user.roles]))]
             .map(role => `<ser:roleList>${role}</ser:roleList>`)
             .join('');
 
@@ -128,7 +141,6 @@ const createOAuth2Users = async ({
                 data,
             });
         }
-
     }))
 };
 
