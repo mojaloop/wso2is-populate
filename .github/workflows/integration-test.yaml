@@ -39,6 +39,9 @@ jobs:
     - name: Print WSO2 logs
       run: kubectl logs deploy/wso2is
 
+    - name: Print resources
+      run: kubectl get svc,deploy,configmap,job,pod -A
+
     - name: Curl wso2is
       run: time kubectl run --attach --image curlimages/curl -- curl -siu 'admin:admin' -k 'https://wso2is:9443'
 

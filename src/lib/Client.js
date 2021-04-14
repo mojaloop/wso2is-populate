@@ -1,6 +1,7 @@
 const axios = require('axios');
 const check = require('check-types');
 const https = require('https');
+const contextLog = require('./lib/contextLog');
 
 const REQUEST_METHODS = {
     GET: 'get',
