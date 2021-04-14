@@ -31,5 +31,8 @@ jobs:
     - name: Deploy
       run: skaffold run
 
+    - name: Tail job logs
+      run: kubectl logs -f jobs/wso2is-populate
+
     - name: Wait for populate to complete
       run: kubectl wait --for=condition=complete jobs/wso2is-populate
