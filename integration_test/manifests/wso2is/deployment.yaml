@@ -17,3 +17,12 @@ spec:
         image: wso2/wso2is-km:5.7.0
         ports:
         - containerPort: 9443
+        readinessProbe:
+          httpGet:
+            scheme: HTTPS
+            path: /
+            port: 9443
+          # WSO2 sure takes its time starting up. In fact, on lower spec machines it's often
+          # upwards of 90 seconds. But.. whatever..
+          initialDelaySeconds: 15
+          periodSeconds: 10
