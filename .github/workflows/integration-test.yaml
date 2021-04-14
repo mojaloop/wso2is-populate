@@ -36,11 +36,14 @@ jobs:
         time kubectl wait --for=condition=available --timeout=180s deploy/wso2is
         time kubectl rollout status -w --timeout=180s deploy/wso2is
 
-    - name: Tail job logs
-      run: kubectl logs -f jobs/wso2is-populate
-
     - name: Print WSO2 logs
       run: kubectl logs deploy/wso2is
+
+    - name: Curl wso2is
+      run: time kubectl run --attach --image curlimages/curl -- curl -siu 'admin:admin' -k 'https://wso2is:9443'
+
+    - name: Tail job logs
+      run: kubectl logs -f jobs/wso2is-populate
 
     - name: Print resources
       run: kubectl get svc,deploy,configmap,job,pod -A
