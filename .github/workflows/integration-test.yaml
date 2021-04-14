@@ -13,12 +13,12 @@ jobs:
     - name: Install k3d
       run: |-
         curl -Lo k3d https://github.com/rancher/k3d/releases/download/v4.4.1/k3d-linux-amd64
-        install k3d /usr/local/bin/
+        sudo install k3d /usr/local/bin/
 
     - name: Install Skaffold
       run:
         curl -Lo skaffold https://storage.googleapis.com/skaffold/releases/v1.21.0/skaffold-linux-amd64
-        install skaffold /usr/local/bin/
+        sudo install skaffold /usr/local/bin/
 
     - name: Start cluster
       run: |-
