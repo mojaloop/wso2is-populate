@@ -1,4 +1,4 @@
-name: Unit test
+name: Integration test
 on: push
 jobs:
   integration-test:
@@ -16,7 +16,7 @@ jobs:
         sudo install k3d /usr/local/bin/
 
     - name: Install Skaffold
-      run:
+      run: |-
         curl -Lo skaffold https://storage.googleapis.com/skaffold/releases/v1.21.0/skaffold-linux-amd64
         sudo install skaffold /usr/local/bin/
 
