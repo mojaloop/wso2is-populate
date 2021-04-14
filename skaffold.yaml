@@ -10,4 +10,10 @@ build:
 deploy:
   kustomize:
     paths:
-    - integration_test/authorisation
+    - integration_test/local
+profiles:
+- name: integration-test-authorisation
+  deploy:
+    kustomize:
+      paths:
+      - integration_test/authorisation

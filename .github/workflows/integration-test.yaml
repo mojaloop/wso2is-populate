@@ -29,7 +29,7 @@ jobs:
           wso2ispopulate-integration-test
 
     - name: Deploy
-      run: skaffold run
+      run: skaffold run --profile integration-test-authorisation
 
     - name: Wait for wso2is to come up
       run: |-
@@ -38,6 +38,9 @@ jobs:
 
     - name: Tail job logs
       run: kubectl logs -f jobs/wso2is-populate
+
+    - name: Print WSO2 logs
+      run: kubectl logs deploy/wso2is
 
     - name: Print resources
       run: kubectl get svc,deploy,configmap,job,pod -A

@@ -1,0 +1,20 @@
+resources:
+- ../authorisation
+
+secretGenerator:
+- name: regcred
+  type: kubernetes.io/dockerconfigjson
+  files:
+  - .dockerconfigjson
+
+patches:
+- patch: |-
+    apiVersion: batch/v1
+    kind: Job
+    metadata:
+      name: wso2is-populate
+    spec:
+      template:
+        spec:
+          imagePullSecrets:
+          - name: regcred
