@@ -25,8 +25,8 @@ jobs:
         k3d cluster create \
           --kubeconfig-update-default \
           --kubeconfig-switch-context \
-          --image=rancher/k3s:v1.20.5-k3s1 \
-          wso2ispopulate-integration-test
+          --image=rancher/k3s:v1.18.17-k3s1 \
+          int-test
 
     - name: Deploy
       run: skaffold run --profile integration-test-authorisation
