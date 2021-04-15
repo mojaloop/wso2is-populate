@@ -90,8 +90,7 @@ jobs:
       run: time kubectl wait --timeout=600s --for=condition=complete jobs/wso2is-populate
 
     - name: Forward cluster services
-      # kubefwd doesn't seem to use our context, for whatever reason
-      run: sudo kubefwd services --context k3d-int-test
+      run: sudo -E kubefwd services --context k3d-int-test
 
     # TODO: make this a little more dynamic- we should modify the password to be something random
     # each time we run this test, then use it here. If we do it in `src/imports/users.json` before
