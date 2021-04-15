@@ -22,8 +22,13 @@ async function makeRequest(client, type, route, data) {
     } catch (error) {
         // 409 means that the target entry already exists in WSO2IS.
         if (error.response == null || error.response.status !== 409) {
-            contextLog(`${type.toUpperCase()} ${route} failed with error:`, error);
-            contextLog('Request:', data);
+            contextLog(`${type.toUpperCase()} ${route} failed with error:`, error.toJSON());
+            contextLog('Request:', {
+                defaults: client.defaults,
+                type,
+                route,
+                data,
+            });
             contextLog(`Response data:`, error?.response?.data);
 
             throw error;
