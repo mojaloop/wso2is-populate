@@ -45,8 +45,18 @@ jobs:
     - name: Tail job logs
       run: kubectl logs -f jobs/wso2is-populate
 
+    - name: DNS
+      run: |-
+        kubectl run dnsutils --image gcr.io/kubernetes-e2e-test-images/dnsutils:1.3 --command -- sleep 1m
+        kubectl wait --for=condition=ready pod/dnsutils
+        time kubectl exec -it dnsutils -- nslookup kubernetes.default
+        time kubectl exec -it dnsutils -- nslookup wso2is
+
     - name: Curl wso2is
-      run: time kubectl run --attach --image curlimages/curl -- curl -siu 'admin:admin' -k 'https://wso2is:9443'
+      run: |-
+        kubectl run curl --image curlimages/curl --command -- sleep 70s
+        kubectl wait --for=condition=ready pod/curl
+        time kubectl exec -it newestcurl -- curl -siu 'admin:admin' -k 'https://wso2is:9443'
 
     - name: Print resources
       run: kubectl get svc,deploy,configmap,job,pod -A
