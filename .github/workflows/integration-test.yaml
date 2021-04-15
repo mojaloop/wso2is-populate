@@ -38,10 +38,13 @@ jobs:
 
     - name: Curl wso2is
       run: |-
+        set -euxo pipefail
+        date -Ins
         kubectl run curl --image curlimages/curl --command -- sleep 70s
         kubectl wait --for=condition=ready pod/curl
         time kubectl exec -it curl -- curl -siu 'admin:admin' -k 'https://wso2is:9443'
         time kubectl exec -it curl -- curl -siu 'admin:admin' -k 'https://wso2is:9443/scim2/Groups'
+        date -Ins
 
     - name: Print WSO2 logs
       run: kubectl logs deploy/wso2is
@@ -54,23 +57,29 @@ jobs:
 
     - name: DNS
       run: |-
+        set -euxo pipefail
+        date -Ins
         kubectl run dnsutils --image gcr.io/kubernetes-e2e-test-images/dnsutils:1.3 --command -- sleep 1m
         kubectl wait --for=condition=ready pod/dnsutils
         time kubectl exec -it dnsutils -- nslookup kubernetes.default
         time kubectl exec -it dnsutils -- nslookup wso2is
+        date -Ins
 
     - name: Curl wso2is
       run: |-
+        set -euxo pipefail
+        date -Ins
         kubectl run curl2 --image curlimages/curl --command -- sleep 70s
         kubectl wait --for=condition=ready pod/curl2
         time kubectl exec -it curl2 -- curl -siu 'admin:admin' -k 'https://wso2is:9443'
         time kubectl exec -it curl2 -- curl -siu 'admin:admin' -k 'https://wso2is:9443/scim2/Groups'
+        date -Ins
 
     - name: Print resources
       run: kubectl get svc,deploy,configmap,job,pod -A
 
     - name: Wait for populate to complete
-      run: time kubectl wait --for=condition=complete jobs/wso2is-populate
+      run: time kubectl wait --timeout=600s --for=condition=complete jobs/wso2is-populate
 
     - name: Print resources
       run: kubectl get svc,deploy,configmap,job,pod -A
