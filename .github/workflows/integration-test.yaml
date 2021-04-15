@@ -27,11 +27,11 @@ jobs:
         sudo install kubefwd /usr/local/bin/
 
     - name: Start cluster
-      run: |-
-        k3d cluster create \
-          --kubeconfig-update-default \
-          --kubeconfig-switch-context \
-          --image=rancher/k3s:v1.18.17-k3s1 \
+      run:
+        k3d cluster create
+          --kubeconfig-update-default
+          --kubeconfig-switch-context
+          --image=rancher/k3s:v1.20.5-k3s1
           int-test
 
     - name: Deploy
@@ -90,15 +90,16 @@ jobs:
       run: time kubectl wait --timeout=600s --for=condition=complete jobs/wso2is-populate
 
     - name: Forward cluster services
-      run: sudo kubefwd services
+      # kubefwd doesn't seem to use our context, for whatever reason
+      run: sudo kubefwd services --context k3d-int-test
 
     # TODO: make this a little more dynamic- we should modify the password to be something random
     # each time we run this test, then use it here. If we do it in `src/imports/users.json` before
     # `skaffold run`, skaffold should pick up in the built wso2is-populate image.
     - name: Check we can log in with portaladmin
       run: |-
-        curl -L -X POST 'http://portal-backend/login' \
-          --H 'Content-Type: application/json' \
+        curl -L -X POST 'http://portal-backend/login'
+          --H 'Content-Type: application/json'
           --data-raw '{
             "username": "portaladmin",
             "password": "mcvV2KYw9eKPqNagjGy6"
@@ -106,8 +107,8 @@ jobs:
 
     - name: Check we can log in with portaluser
       run: |-
-        curl -L -X POST 'http://portal-backend/login' \
-          --H 'Content-Type: application/json' \
+        curl -L -X POST 'http://portal-backend/login'
+          --H 'Content-Type: application/json'
           --data-raw '{
             "username": "portaluser",
             "password": "mcvV2KYw9eKPqNagjGy5"
