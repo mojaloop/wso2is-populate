@@ -56,7 +56,7 @@ jobs:
       run: |-
         kubectl run curl --image curlimages/curl --command -- sleep 70s
         kubectl wait --for=condition=ready pod/curl
-        time kubectl exec -it newestcurl -- curl -siu 'admin:admin' -k 'https://wso2is:9443'
+        time kubectl exec -it curl -- curl -siu 'admin:admin' -k 'https://wso2is:9443'
 
     - name: Print resources
       run: kubectl get svc,deploy,configmap,job,pod -A
