@@ -36,6 +36,13 @@ jobs:
         time kubectl wait --for=condition=available --timeout=180s deploy/wso2is
         time kubectl rollout status -w --timeout=180s deploy/wso2is
 
+    - name: Curl wso2is
+      run: |-
+        kubectl run curl --image curlimages/curl --command -- sleep 70s
+        kubectl wait --for=condition=ready pod/curl
+        time kubectl exec -it curl -- curl -siu 'admin:admin' -k 'https://wso2is:9443'
+        time kubectl exec -it curl -- curl -siu 'admin:admin' -k 'https://wso2is:9443/scim2/Groups'
+
     - name: Print WSO2 logs
       run: kubectl logs deploy/wso2is
 
@@ -57,9 +64,13 @@ jobs:
         kubectl run curl --image curlimages/curl --command -- sleep 70s
         kubectl wait --for=condition=ready pod/curl
         time kubectl exec -it curl -- curl -siu 'admin:admin' -k 'https://wso2is:9443'
+        time kubectl exec -it curl -- curl -siu 'admin:admin' -k 'https://wso2is:9443/scim2/Groups'
 
     - name: Print resources
       run: kubectl get svc,deploy,configmap,job,pod -A
 
     - name: Wait for populate to complete
       run: time kubectl wait --for=condition=complete jobs/wso2is-populate
+
+    - name: Print resources
+      run: kubectl get svc,deploy,configmap,job,pod -A
