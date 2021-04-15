@@ -42,11 +42,11 @@ jobs:
     - name: Print resources
       run: kubectl get svc,deploy,configmap,job,pod -A
 
-    - name: Curl wso2is
-      run: time kubectl run --attach --image curlimages/curl -- curl -siu 'admin:admin' -k 'https://wso2is:9443'
-
     - name: Tail job logs
       run: kubectl logs -f jobs/wso2is-populate
+
+    - name: Curl wso2is
+      run: time kubectl run --attach --image curlimages/curl -- curl -siu 'admin:admin' -k 'https://wso2is:9443'
 
     - name: Print resources
       run: kubectl get svc,deploy,configmap,job,pod -A
