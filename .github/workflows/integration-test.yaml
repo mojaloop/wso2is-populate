@@ -99,7 +99,7 @@ jobs:
     # each time we run this test, then use it here. If we do it in `src/imports/users.json` before
     # `skaffold run`, skaffold should pick up in the built wso2is-populate image.
     - name: Check we can log in with portaladmin
-      run: >
+      run: >2
         curl -L -X POST 'http://portal-backend/login'
           -H 'Content-Type: application/json'
           --data-raw '{
@@ -108,7 +108,7 @@ jobs:
           }'
 
     - name: Check we can log in with portaluser
-      run: >
+      run: >2
         curl -L -X POST 'http://portal-backend/login'
           -H 'Content-Type: application/json'
           --data-raw '{
