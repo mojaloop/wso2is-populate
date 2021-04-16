@@ -10,6 +10,11 @@ jobs:
     - name: Checkout repository
       uses: actions/checkout@v2
 
+    - name: Install latest curl for --fail-with-body
+      run: |-
+        curl -Lo curl https://github.com/moparisthebest/static-curl/releases/download/v7.76.1/curl-amd64
+        sudo install curl /usr/local/bin
+
     - name: Install k3d
       run: |-
         curl -Lo k3d https://github.com/rancher/k3d/releases/download/v4.4.1/k3d-linux-amd64
