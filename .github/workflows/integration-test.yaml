@@ -12,6 +12,7 @@ jobs:
 
     - name: Install latest curl for --fail-with-body
       run: |-
+        # Note that this download was listed here: https://curl.se/download.html#Linux
         curl -Lo curl https://github.com/moparisthebest/static-curl/releases/download/v7.76.1/curl-amd64
         sudo install curl /usr/local/bin
 
@@ -32,11 +33,11 @@ jobs:
         sudo install kubefwd /usr/local/bin/
 
     - name: Start cluster
-      run:
-        k3d cluster create
-          --kubeconfig-update-default
-          --kubeconfig-switch-context
-          --image=rancher/k3s:v1.20.5-k3s1
+      run: |-
+        k3d cluster create \
+          --kubeconfig-update-default \
+          --kubeconfig-switch-context \
+          --image=rancher/k3s:v1.20.5-k3s1 \
           int-test
 
     - name: Deploy
