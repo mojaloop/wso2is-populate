@@ -105,6 +105,7 @@ jobs:
     # each time we run this test, then use it here. If we do it in `src/imports/users.json` before
     # `skaffold run`, skaffold should pick up in the built wso2is-populate image.
     - name: Check we can log in as portaladmin
+      continue-on-error: true
       run: |-
         curl -L -X POST 'http://portal-backend/login' \
           -H 'Content-Type: application/json' \
@@ -115,6 +116,7 @@ jobs:
           }'
 
     - name: Check we can log in as portaluser
+      continue-on-error: true
       run: |-
         curl -L -X POST 'http://portal-backend/login' \
           -H 'Content-Type: application/json' \
@@ -125,9 +127,11 @@ jobs:
           }'
 
     # - name: Ensure we can update NDC with portaladmin
+    #   continue-on-error: true
     #   run:
 
     # - name: Ensure we cannot update NDC with portaluser
+    #   continue-on-error: true
     #   run:
 
     - name: Collect all pod logs
