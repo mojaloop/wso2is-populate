@@ -130,6 +130,10 @@ jobs:
     # - name: Ensure we cannot update NDC with portaluser
     #   run:
 
+    - name: Collect all pod logs
+      if: ${{ always() }}
+      run: kubectl get pods -o jsonpath='{$.items[*].metadata.name}' | tr ' ' '\n' | xargs -I{} bash -xc 'kubectl logs {}'
+
     # - name: Print resources
     #   run: kubectl get svc,deploy,configmap,job,pod -A
 
