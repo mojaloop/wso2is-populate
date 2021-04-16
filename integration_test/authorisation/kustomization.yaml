@@ -5,12 +5,15 @@ resources:
 
 configMapGenerator:
 - name: oauth-app-credentials
-  literals:
+  literals: &oauth_creds
   - AUTH_SERVER_CLIENTKEY=fv0xZxstzo2_qVcqMRFpLI43xm8mZZ
   - AUTH_SERVER_CLIENTSECRET=CJvf1mQxQdLqWLYuNvAicRd6iBMQo5
 - name: wso2is-populate
   literals:
   - WSO2_HOST=https://wso2is:9443
+- name: portal-backend
+  behavior: merge
+  literals: *oauth_creds
 
 patches:
 - patch: |-

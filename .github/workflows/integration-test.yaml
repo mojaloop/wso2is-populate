@@ -104,7 +104,7 @@ jobs:
     # TODO: make this a little more dynamic- we should modify the password to be something random
     # each time we run this test, then use it here. If we do it in `src/imports/users.json` before
     # `skaffold run`, skaffold should pick up in the built wso2is-populate image.
-    - name: Check we can log in with portaladmin
+    - name: Check we can log in as portaladmin
       run: |-
         curl -L -X POST 'http://portal-backend/login' \
           -H 'Content-Type: application/json' \
@@ -114,7 +114,7 @@ jobs:
             "password": "mcvV2KYw9eKPqNagjGy6"
           }'
 
-    - name: Check we can log in with portaluser
+    - name: Check we can log in as portaluser
       run: |-
         curl -L -X POST 'http://portal-backend/login' \
           -H 'Content-Type: application/json' \
@@ -132,7 +132,8 @@ jobs:
 
     - name: Collect all pod logs
       if: ${{ always() }}
-      run: kubectl get pods -o jsonpath='{$.items[*].metadata.name}' | tr ' ' '\n' | xargs -I{} bash -xc 'kubectl logs {}'
+      # the "bonus" echo here just means that if a pod hasn't printed a new-line we'll add a gap
+      run: kubectl get pods -o jsonpath='{$.items[*].metadata.name}' | tr ' ' '\n' | xargs -I{} bash -xc 'echo; kubectl logs {}'
 
     # - name: Print resources
     #   run: kubectl get svc,deploy,configmap,job,pod -A
