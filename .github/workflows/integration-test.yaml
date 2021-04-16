@@ -106,9 +106,9 @@ jobs:
         CONFIGMAPNAME="$(kubectl get job wso2is-populate -o json | jq -r '.spec.template.spec.containers[] | select(.name == "job").envFrom[] | select(.configMapRef.name | test("oauth-app-credentials")) | .configMapRef.name')"
         CONF="$(kubectl get -o json configmap "$CONFIGMAPNAME" | jq -r '.data | to_entries | .[] | .key + "=\"" + .value + "\""')"
         echo "$CONF"
-        echo "$(echo \"$CONF\" | tr '\n' ' ') npm run integration-test-authorisation"
+        echo "$(echo "$CONF" | tr '\n' ' ') npm run integration-test-authorisation"
         npm ci
-        eval "$(echo \"$CONF\" | tr '\n' ' ') npm run integration-test-authorisation"
+        eval "$(echo "$CONF" | tr '\n' ' ') npm run integration-test-authorisation"
 
     # - name: Ensure we can update NDC with portaladmin
     #   continue-on-error: true
