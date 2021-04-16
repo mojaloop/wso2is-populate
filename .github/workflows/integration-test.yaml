@@ -95,11 +95,15 @@ jobs:
         # sleep 5
         # timeout 1 bash -c "cat < /dev/null > /dev/tcp/portal-backend/80"
 
+    # TODO: consider running this by stuffing a pod into the cluster. Perhaps with `skaffold run
+    # --tail`, `skaffold debug` or similar.
     # TODO: make this a little more dynamic- we should modify the password to be something random
     # each time we run this test, then use it here. If we do it in `src/imports/users.json` before
     # `skaffold run`, skaffold should pick up in the built wso2is-populate image.
-    - name: Check we can log in as portaladmin
+    - name: Run integration tests
       run: |-
+        # Load AUTH_SERVER_CLIENTKEY and AUTH_SERVER_CLIENTSECRET into our env
+        eval $(kubectl get -o json configmap oauth-app-credentials | jq -r '.data | to_entries | .[] | .key + "=\"" + .value + "\""')
         npm ci
         npm run integration-test-authorisation
 
@@ -113,7 +117,7 @@ jobs:
 
     # Print all pod logs here, but also pods individually, so that we don't miss anything, but also
     # so that individual pod logs can easily be explored in job output.
-    - name: Collect all pod logs
+    - name: Print all pod logs
       if: ${{ always() }}
       # the "bonus" echo here just means that if a pod hasn't printed a new-line we'll add a gap
       run: kubectl get pods -o jsonpath='{$.items[*].metadata.name}' | tr ' ' '\n' | xargs -I{} bash -xc 'echo; kubectl logs {}'
