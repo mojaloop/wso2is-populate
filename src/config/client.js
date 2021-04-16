@@ -16,7 +16,7 @@ const envSchema = {
             format: 'uri',
             pattern: '^https://',
         },
-        CLIENT_KEY: {
+        AUTH_SERVER_CLIENTKEY: {
             type: 'string',
             pattern: '^[a-zA-Z0-9_]{15,30}$',
         },
@@ -39,8 +39,8 @@ const conf = {
     },
     application: {
         name: process.env.APPLICATION_NAME || 'portaloauthprovider',
-        clientKey: process.env.CLIENT_KEY || randomString({ length: 30 }),
-        clientSecret: process.env.CLIENT_SECRET || randomString({ length: 30 }),
+        clientKey: process.env.AUTH_SERVER_CLIENTKEY || randomString({ length: 30 }),
+        clientSecret: process.env.AUTH_SERVER_CLIENTSECRET || randomString({ length: 30 }),
     },
 };
 
