@@ -1,24 +1,19 @@
 const axios = require('axios');
+const https = require('https');
 
 describe('wso2is', () => {
-    // curl -k -X POST 'https://localhost:9443/oauth2/token' \
-    //     --header 'Content-Type: application/x-www-form-urlencoded' \
-    //     --data-urlencode "client_id=$AUTH_SERVER_CLIENTKEY" \
-    //     --data-urlencode "client_secret=$AUTH_SERVER_CLIENTSECRET" \
-    //     --data-urlencode 'grant_type=password' \
-    //     --data-urlencode 'scope=portaloauthprovider' \
-    //     --data-urlencode 'username=portaladmin' \
-    //     --data-urlencode 'password=mcvV2KYw9eKPqNagjGy6'
     const config = {
         baseURL: process.env.WSO2IS_HOST || 'https://wso2is:9443',
         method: 'post',
         headers: {
             'Content-Type': 'application/x-www-form-urlencoded',
         },
+        httpsAgent: new https.Agent({ rejectUnauthorized: false }),
     };
     it('issues an oauth token', async () => {
         const result = await axios({
             ...config,
+            url: '/oauth2/token',
             params: {
                 client_id: process.env.AUTH_SERVER_CLIENTKEY,
                 client_secret: process.env.AUTH_SERVER_CLIENTSECRET,

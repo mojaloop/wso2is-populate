@@ -104,9 +104,9 @@ jobs:
       run: |-
         # Load AUTH_SERVER_CLIENTKEY and AUTH_SERVER_CLIENTSECRET into our env
         CONFIGMAPNAME="$(kubectl get job wso2is-populate -o json | jq -r '.spec.template.spec.containers[] | select(.name == "job").envFrom[] | select(.configMapRef.name | test("oauth-app-credentials")) | .configMapRef.name')"
-        eval $(kubectl get -o json configmap "$CONFIGMAPNAME" | jq -r '.data | to_entries | .[] | .key + "=\"" + .value + "\""')
+        CONF="$(kubectl get -o json configmap "$CONFIGMAPNAME" | jq -r '.data | to_entries | .[] | .key + "=\"" + .value + "\""')"
         npm ci
-        npm run integration-test-authorisation
+        eval "$(echo \"$CONF\" | tr '\n' ' ') npm run integration-test-authorisation"
 
     # - name: Ensure we can update NDC with portaladmin
     #   continue-on-error: true
