@@ -10,12 +10,6 @@ jobs:
     - name: Checkout repository
       uses: actions/checkout@v2
 
-    - name: Install latest curl for --fail-with-body
-      run: |-
-        # Note that this download was listed here: https://curl.se/download.html#Linux
-        curl -Lo curl https://github.com/moparisthebest/static-curl/releases/download/v7.76.1/curl-amd64
-        sudo install curl /usr/local/bin
-
     - name: Install k3d
       run: |-
         curl -Lo k3d https://github.com/rancher/k3d/releases/download/v4.4.1/k3d-linux-amd64
@@ -105,26 +99,9 @@ jobs:
     # each time we run this test, then use it here. If we do it in `src/imports/users.json` before
     # `skaffold run`, skaffold should pick up in the built wso2is-populate image.
     - name: Check we can log in as portaladmin
-      continue-on-error: true
       run: |-
-        curl -L -X POST 'http://portal-backend/login' \
-          -H 'Content-Type: application/json' \
-          --fail-with-body \
-          --data-raw '{
-            "username": "portaladmin",
-            "password": "mcvV2KYw9eKPqNagjGy6"
-          }'
-
-    - name: Check we can log in as portaluser
-      continue-on-error: true
-      run: |-
-        curl -L -X POST 'http://portal-backend/login' \
-          -H 'Content-Type: application/json' \
-          --fail-with-body \
-          --data-raw '{
-            "username": "portaluser",
-            "password": "mcvV2KYw9eKPqNagjGy5"
-          }'
+        npm ci
+        npm run integration-test-authorisation
 
     # - name: Ensure we can update NDC with portaladmin
     #   continue-on-error: true
@@ -134,10 +111,24 @@ jobs:
     #   continue-on-error: true
     #   run:
 
+    # Print all pod logs here, but also pods individually, so that we don't miss anything, but also
+    # so that individual pod logs can easily be explored in job output.
     - name: Collect all pod logs
       if: ${{ always() }}
       # the "bonus" echo here just means that if a pod hasn't printed a new-line we'll add a gap
       run: kubectl get pods -o jsonpath='{$.items[*].metadata.name}' | tr ' ' '\n' | xargs -I{} bash -xc 'echo; kubectl logs {}'
+
+    - name: Print portal backend logs
+      if: ${{ always() }}
+      run: kubectl logs deploy/portal-backend
+
+    - name: Print wso2is-populate logs
+      if: ${{ always() }}
+      run: kubectl logs jobs/wso2is-populate
+
+    - name: Print wso2is logs
+      if: ${{ always() }}
+      run: kubectl logs deploy/wso2is
 
     # - name: Print resources
     #   run: kubectl get svc,deploy,configmap,job,pod -A
