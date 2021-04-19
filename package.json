@@ -1,13 +1,14 @@
 {
   "name": "wso2is-populate",
-  "version": "2.0.0",
+  "version": "2.0.1",
   "description": "A standalone script that can be used as a wrapper around an WSO2 Identity Server in order to import users and roles into it.",
   "main": "src/index.js",
   "scripts": {
     "lint": "eslint ./src",
     "lint:fix": "eslint ./src --fix",
     "start": "node src/index.js",
-    "test": "jest src/test/unit"
+    "test": "jest src/test/unit",
+    "integration-test-authorisation": "jest integration_test/authorisation/tests/index.test.js"
   },
   "repository": {
     "type": "git",

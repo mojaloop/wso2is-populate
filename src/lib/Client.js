@@ -1,6 +1,7 @@
 const axios = require('axios');
 const check = require('check-types');
 const https = require('https');
+const contextLog = require('../lib/contextLog');
 
 const REQUEST_METHODS = {
     GET: 'get',
@@ -21,8 +22,14 @@ async function makeRequest(client, type, route, data) {
     } catch (error) {
         // 409 means that the target entry already exists in WSO2IS.
         if (error.response == null || error.response.status !== 409) {
-            console.log(`${type.toUpperCase()} ${route} failed with error: ${error}`);
-            console.log(error && error.response && error.response.data);
+            contextLog(`${type.toUpperCase()} ${route} failed with error:`, error.toJSON());
+            contextLog('Request:', {
+                defaults: client.defaults,
+                type,
+                route,
+                data,
+            });
+            contextLog(`Response data:`, error?.response?.data);
 
             throw error;
         }

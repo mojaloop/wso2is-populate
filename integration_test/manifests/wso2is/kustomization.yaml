@@ -1,0 +1,28 @@
+resources:
+- deployment.yaml
+- service.yaml
+
+configMapGenerator:
+- name: wso2-config-files
+  files:
+  - identity.xml
+
+patches:
+- patch: |-
+    apiVersion: apps/v1
+    kind: Deployment
+    metadata:
+      name: wso2is
+    spec:
+      template:
+        spec:
+          volumes:
+          - name: config
+            configMap:
+              name: wso2-config-files
+          containers:
+          - name: app
+            volumeMounts:
+            - name: config
+              mountPath: /home/wso2carbon/wso2is-km-5.7.0/repository/conf/identity/identity.xml
+              subPath: identity.xml

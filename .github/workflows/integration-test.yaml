@@ -1,0 +1,102 @@
+name: Integration test
+on: push
+jobs:
+  integration-test:
+    timeout-minutes: 10
+    runs-on: ubuntu-20.04
+
+    steps:
+
+    - name: Checkout repository
+      uses: actions/checkout@v2
+
+    - name: Install k3d
+      run: |-
+        curl -Lo k3d https://github.com/rancher/k3d/releases/download/v4.4.1/k3d-linux-amd64
+        sudo install k3d /usr/local/bin/
+
+    - name: Install Skaffold
+      run: |-
+        curl -Lo skaffold https://storage.googleapis.com/skaffold/releases/v1.21.0/skaffold-linux-amd64
+        sudo install skaffold /usr/local/bin/
+
+    - name: Install kubefwd
+      run: |-
+        curl -Lo kubefwd.tar.gz https://github.com/txn2/kubefwd/releases/download/1.18.1/kubefwd_Linux_x86_64.tar.gz
+        tar xf kubefwd.tar.gz
+        sudo install kubefwd /usr/local/bin/
+
+    - name: Start cluster
+      run: |-
+        k3d cluster create \
+          --kubeconfig-update-default \
+          --kubeconfig-switch-context \
+          --image=rancher/k3s:v1.20.5-k3s1 \
+          int-test
+
+    - name: Deploy
+      run: skaffold run --profile integration-test-authorisation
+
+    - name: Wait for wso2is to come up
+      run: |-
+        time kubectl wait --for=condition=available --timeout=300s deploy/wso2is
+        time kubectl rollout status -w --timeout=300s deploy/wso2is
+
+    # This normally happens about a minute after wso2is comes up, but sometimes takes a bit longer.
+    # We wait for the entire duration of the workflow job- why not..?
+    - name: Wait for populate to complete
+      run: time kubectl wait --timeout=600s --for=condition=complete jobs/wso2is-populate
+
+    - name: Forward cluster services
+      run: |-
+        sudo -E kubefwd services --context k3d-int-test &
+        # sleep 5
+        # timeout 1 bash -c "cat < /dev/null > /dev/tcp/portal-backend/80"
+
+    # TODO: consider running this by stuffing a pod into the cluster. Perhaps with `skaffold run
+    # --tail`, `skaffold debug` or similar.
+    # TODO: make this a little more dynamic- we should modify the password to be something random
+    # each time we run this test, then use it here. If we do it in `src/imports/users.json` before
+    # `skaffold run`, skaffold should pick up in the built wso2is-populate image.
+    - name: Run integration tests
+      run: |-
+        # Load AUTH_SERVER_CLIENTKEY and AUTH_SERVER_CLIENTSECRET into our env
+        CONFIGMAPNAME="$(kubectl get job wso2is-populate -o json | jq -r '.spec.template.spec.containers[] | select(.name == "job").envFrom[] | select(.configMapRef.name | test("oauth-app-credentials")) | .configMapRef.name')"
+        CONF="$(kubectl get -o json configmap "$CONFIGMAPNAME" | jq -r '.data | to_entries | .[] | .key + "=\"" + .value + "\""')"
+        echo "$CONF"
+        echo "$(echo "$CONF" | tr '\n' ' ') npm run integration-test-authorisation"
+        npm ci
+        eval "$(echo "$CONF" | tr '\n' ' ') npm run integration-test-authorisation"
+
+    # - name: Ensure we can update NDC with portaladmin
+    #   continue-on-error: true
+    #   run:
+
+    # - name: Ensure we cannot update NDC with portaluser
+    #   continue-on-error: true
+    #   run:
+
+    # Print all pod logs here, but also pods individually, so that we don't miss anything, but also
+    # so that individual pod logs can easily be explored in job output.
+    - name: Print all pod logs
+      if: ${{ always() }}
+      # the "bonus" echo here just means that if a pod hasn't printed a new-line we'll add a gap
+      run: kubectl get pods -o jsonpath='{$.items[*].metadata.name}' | tr ' ' '\n' | xargs -I{} bash -xc 'echo; kubectl logs {}'
+
+    - name: Print portal backend logs
+      if: ${{ always() }}
+      run: kubectl logs deploy/portal-backend
+
+    - name: Print wso2is-populate logs
+      if: ${{ always() }}
+      run: kubectl logs jobs/wso2is-populate
+
+    - name: Print wso2is logs
+      if: ${{ always() }}
+      run: kubectl logs deploy/wso2is
+
+    - name: Print resources
+      if: ${{ always() }}
+      run: kubectl get svc,deploy,configmap,job,pod -A
+
+
