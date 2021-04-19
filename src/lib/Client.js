@@ -2,39 +2,16 @@ const axios = require('axios');
 const check = require('check-types');
 const https = require('https');
 
-const AUTHENTICATION_TYPES = {
-    BASIC: 'basic',
-};
-
 const REQUEST_METHODS = {
     GET: 'get',
     POST: 'post',
 };
 
-function validateHTTPConfig(config) {
-    return check.nonEmptyObject(config)
-        && check.nonEmptyString(config.host)
-        && check.positive(config.port)
-        && check.maybe.nonEmptyString(config.endpoint)
-        && check.positive(config.timeout);
-}
-
-function validateAuthConfig(config) {
-    return check.nonEmptyObject(config)
-        && check.nonEmptyString(config.type)
-        && check.object(config.credentials);
-}
-
 function validateConfiguration(config) {
     return check.assert.nonEmptyObject(config, 'Invalid configuration.')
-        && check.assert(validateHTTPConfig(config.http), 'Invalid HTTP configuration.')
-        && check.assert(validateAuthConfig(config.authentication), 'Invalid Authentication configuration.');
-}
-
-function configureAuthentication(client, authConfig) {
-    if (authConfig.type === AUTHENTICATION_TYPES.BASIC) {
-        axios.defaults.auth = authConfig.credentials;
-    }
+        && check.assert.nonEmptyString(config.host, 'Invalid host.')
+        && check.assert.nonEmptyString(config?.credentials?.password, 'Invalid password.')
+        && check.assert.nonEmptyString(config?.credentials?.username, 'Invalid username.');
 }
 
 async function makeRequest(client, type, route, data) {
@@ -42,11 +19,11 @@ async function makeRequest(client, type, route, data) {
         const response = await client[type](route, data);
         return (response && response.data) || null;
     } catch (error) {
-        console.log(`${type.toUpperCase()} ${route} failed with error: ${error}`);
-        console.log(error && error.response && error.response.data);
-
         // 409 means that the target entry already exists in WSO2IS.
         if (error.response == null || error.response.status !== 409) {
+            console.log(`${type.toUpperCase()} ${route} failed with error: ${error}`);
+            console.log(error && error.response && error.response.data);
+
             throw error;
         }
 
@@ -69,10 +46,7 @@ class Client {
     constructor(config) {
         validateConfiguration(config);
 
-        this.url = '{host}:{port}/{endpoint}'
-            .replace('{host}', config.http.host)
-            .replace('{port}', config.http.port)
-            .replace('{endpoint}', config.http.endpoint);
+        this.url = `${config.host}/scim2`;
 
         this.client = axios;
         this.client.defaults.baseURL = this.url;
@@ -81,8 +55,7 @@ class Client {
         this.client.defaults.httpsAgent = new https.Agent({
             rejectUnauthorized: false,
         });
-
-        configureAuthentication(this.client, config.authentication);
+        this.client.defaults.auth = config.credentials;
     }
 
     /**
@@ -126,17 +99,11 @@ class Client {
      * for each one of them.
      *
      * @method addUsers
-     * @param {Array} data - The users data to import into WSO2IS.
+     * @param {Array} users - The users data to import into WSO2IS.
      * @returns {Array} The added users' data if returned by the API.
      */
-    async addUsers(data) {
-        const promises = [];
-
-        data.forEach((user) => {
-            promises.push(this.addUser(user));
-        });
-
-        return Promise.all(promises);
+    async addUsers(users) {
+        return Promise.all(users.map(user => this.addUser(user)));
     }
 
     /**
@@ -184,13 +151,7 @@ class Client {
      * @returns {Array} The added roles' data if returned by the API.
      */
     async addRoles(data) {
-        const promises = [];
-
-        data.forEach((role) => {
-            promises.push(this.addRole(role));
-        });
-
-        return Promise.all(promises);
+        return Promise.all(data.map(role => this.addRole(role)));
     }
 
     /**
