@@ -55,14 +55,17 @@ class Client {
 
         this.url = `${config.host}/scim2`;
 
-        this.client = axios;
-        this.client.defaults.baseURL = this.url;
-        this.client.defaults.headers['Content-Type'] = 'application/json';
-        this.client.defaults.headers.Accept = 'application/json';
-        this.client.defaults.httpsAgent = new https.Agent({
-            rejectUnauthorized: false,
+        this.client = axios.create({
+            baseURL: this.url,
+            headers: {
+                'Content-Type': 'application/json',
+                Accept: 'application/json',
+            },
+            httpsAgent: new https.Agent({
+                rejectUnauthorized: false,
+            }),
+            auth: config.credentials,
         });
-        this.client.defaults.auth = config.credentials;
     }
 
     /**
