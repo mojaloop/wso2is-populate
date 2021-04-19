@@ -113,7 +113,7 @@ const createOAuth2Users = async ({
                 <soapenv:Header/>
                 <soapenv:Body>
                     <ser:addUser>
-                        <ser:userName>${user.name}</ser:userName>
+                        <ser:userName>${user.username}</ser:userName>
                         <ser:credential>${user.password}</ser:credential>
                         ${roleList}
                         <ser:profileName>default</ser:profileName>

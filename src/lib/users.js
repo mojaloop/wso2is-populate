@@ -37,7 +37,7 @@ const load = (users = rawUsers) => {
     );
 
     assert(
-        (new Set(users.map(user => user.name))).size === users.length,
+        (new Set(users.map(user => user.username))).size === users.length,
         `Duplicate user name not allowed. Users: ${print(users)}`,
     );
 

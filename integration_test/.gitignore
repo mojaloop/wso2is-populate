@@ -1,2 +1,5 @@
+# `output` here allows us to use `kustomize build . -o output` and not accidentally commit the
+# result
 output
+# don't accidentally commit secrets
 .dockerconfigjson
