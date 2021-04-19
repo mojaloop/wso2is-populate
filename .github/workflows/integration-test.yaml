@@ -96,6 +96,7 @@ jobs:
       run: kubectl logs deploy/wso2is
 
     - name: Print resources
+      if: ${{ always() }}
       run: kubectl get svc,deploy,configmap,job,pod -A
 
 
