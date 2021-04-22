@@ -12,6 +12,32 @@ const contextLog = require('./contextLog');
 // In fact, it'll have a handler crash and return an HTML 500 if you look at it funny. It *is*
 // weak, but don't feel bad. Be a software darwinist and stop using it. Only the strong survive.
 
+const getUserInfo = async ({
+    token,
+    host = 'https://localhost:9443',
+}) => {
+    const opts = {
+        method: 'POST',
+        headers: {
+            Authorization: `Bearer ${token}`,
+        },
+        https: {
+            rejectUnauthorized: false,
+        },
+        responseType: 'json',
+        url: `${host}/oauth2/userinfo`,
+    };
+    console.log('Trying to get user info', opts);
+
+    try {
+    return await got(opts).then(resp => resp.body);
+    } catch (err) {
+        console.log(err.response.statusCode);
+        console.log(err.response.body);
+        throw new Error('dong');
+    }
+};
+
 const getToken = async ({
     clientKey: client_id,
     clientSecret: client_secret,
@@ -796,4 +822,5 @@ module.exports = {
     registerOAuthApplication,
     getOAuthApplication,
     deleteApplication,
+    getUserInfo,
 };

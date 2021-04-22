@@ -8,6 +8,7 @@ const {
     updateApplication,
     deleteApplication,
     getToken,
+    getUserInfo,
     getOAuthApplication,
     updateOAuthApplication,
     createApplication,
@@ -25,6 +26,11 @@ async function populate(conf, users) {
     // that it's possible to update an application once, but subsequent updates will clear the
     // consumer secret.
     console.log('STEP 0');
+    const {
+        host,
+        credentials: { username, password },
+        application: { name, clientKey, clientSecret }
+    } = conf;
     // TODO: this doesn't seem to very reliably delete the application- although it's unclear
     // whether that's actually more to do with WSO2 leaving vestiges of the application lying
     // around. We _might_ need to wait some time after ostensibly deleting the application and
@@ -40,18 +46,28 @@ async function populate(conf, users) {
     // `deleteApplication` is not quite enough. Specifically, when `registerOAuthApplication` has
     // been called, but `createApplication` has not, this creates a state where the application can
     // neither be created nor deleted.
-    await deleteApplication(conf.application);
+    await deleteApplication({
+        host, name, username, password,
+    });
     // Note that we have to call registerOAuthApplication before calling updateApplication.
     // Otherwise we will not be able to specify the consumer key and secret.
     console.log('STEP 1');
-    await registerOAuthApplication(conf.application);
+    await registerOAuthApplication({
+        host, name, username, password, clientKey, clientSecret,
+    });
     console.log('STEP 2');
-    await createApplication(conf.application);
+    await createApplication({
+        host, name, username, password,
+    });
     console.log('STEP 3');
-    const { id } = await getApplication({ name: conf.application.name });
+    const { id } = await getApplication({
+        host, name, username, password,
+    });
 
     console.log('STEP 4');
-    await updateOAuthApplication({ id, ...conf.application });
+    await updateOAuthApplication({
+        host, id, name, clientKey, clientSecret, username, password,
+    });
 
     console.log('STEP 5');
     const roles = [...(new Set(users.flatMap(user => user.roles)))]
@@ -73,26 +89,32 @@ async function populate(conf, users) {
     //     ...conf.credentials,
     // });
 
+    // TODO: it's possible that using the SCIM API will put "groups" on the user, instead of roles.
+    // Then we won't need to modify the portal.
     console.log('STEP 6');
     await createOAuth2Users({
         users,
-        oauth2ApplicationName: conf.application.name,
+        // TODO: why do we need to give the application role? What happens if we don't?
+        oauth2ApplicationName: name,
         host: conf.host,
-        ...conf.credentials,
+        username,
+        password,
     });
 
     console.log('STEP 7');
     const portaladmin = users.find(({ username }) => username === 'portaladmin');
     const wso2Token = await getToken({
-        host: conf.host,
+        host,
         username: portaladmin.username,
         password: portaladmin.password,
-        ...conf.application,
+        clientKey,
+        clientSecret,
     });
     console.log(wso2Token);
 
     console.log('STEP 8');
-
+    const result = await getUserInfo({ token: wso2Token.access_token });
+    console.log(result);
 }
 
 module.exports = { populate };
