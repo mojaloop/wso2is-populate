@@ -1,11 +1,11 @@
-const axios = require('axios');
+const got = require('got');
 const { createOAuth2Application, createOAuth2Users } = require('../../../lib/api');
 const { populate } = require('../../../index');
 const config = require('../../../config/client');
 const defaultUsers = require('../../../imports/users');
 
 jest.mock('../../../lib/Client');
-jest.mock('axios');
+jest.mock('got');
 
 describe('createOAuth2Application', () => {
     const applicationArgs = {
@@ -36,7 +36,7 @@ describe('createOAuth2Application', () => {
         // createOAuth2Application function. Because createOAuth2Application asserts missing
         // arguments, an error will be thrown here if the function is not called with the correct
         // arguments.
-        axios.mockResolvedValue({
+        got.mockResolvedValue({
             response: {
                 status: 'whatever',
                 data: 'anything',
@@ -47,7 +47,7 @@ describe('createOAuth2Application', () => {
     });
 
     it('correctly handles an application create when the application already exists', async () => {
-        axios.mockRejectedValue({
+        got.mockRejectedValue({
             response: {
                 data: {
                     error_description: 'Application with the name mfpserviceprovider already exist in the system',
@@ -66,7 +66,7 @@ describe('createOAuth2Application', () => {
                 },
             },
         };
-        axios.mockRejectedValue(result);
+        got.mockRejectedValue(result);
         // Just expect this not to throw
         await expect(createOAuth2Application(applicationArgs)).rejects.toEqual(result);
     });
@@ -91,7 +91,7 @@ describe('createOAuth2Users', () => {
     });
 
     it('succeeds with valid config', async () => {
-        axios.mockResolvedValue({
+        got.mockResolvedValue({
             response: {
                 status: 'whatever',
                 data: 'anything',
@@ -101,7 +101,7 @@ describe('createOAuth2Users', () => {
     });
 
     it('correctly handles user creation when a user already exists', async () => {
-        axios.mockRejectedValue({
+        got.mockRejectedValue({
             response: {
                 data: {
                     Fault: {
@@ -123,7 +123,7 @@ describe('createOAuth2Users', () => {
                 },
             },
         };
-        axios.mockRejectedValue(result);
+        got.mockRejectedValue(result);
         await expect(createOAuth2Users(usersArgs)).rejects.toEqual(result);
     });
 });

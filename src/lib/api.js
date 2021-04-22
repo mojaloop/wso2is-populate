@@ -1,5 +1,5 @@
 const assert = require('assert').strict;
-const axios = require('axios');
+const got = require('got');
 const parser = require('fast-xml-parser');
 
 const contextLog = require('./contextLog');
@@ -19,9 +19,11 @@ const getToken = async ({
     const opts = {
         method: 'POST',
         headers: {
+            'Accept': 'application/json',
             'Content-Type': 'application/x-www-form-urlencoded',
         },
-        params: {
+        responseType: 'json',
+        searchParams: {
             client_id,
             client_secret,
             grant_type: 'password',
@@ -32,7 +34,7 @@ const getToken = async ({
         url: `${host}/oauth2/token`,
     };
 
-    return axios(opts);
+    return got(opts);
 };
 
 const createApplication = async ({
@@ -65,7 +67,7 @@ const createApplication = async ({
                </soap:Body>
             </soap:Envelope>`,
     };
-    const { status, data } = await axios(createApplicationRequest);
+    const { status, data } = await got(createApplicationRequest);
     contextLog('Created application', {
         request: createApplicationRequest,
         response: {
@@ -104,7 +106,7 @@ const getApplication = async ({
                </soap:Body>
             </soap:Envelope>`,
     };
-    const getApplicationResponse = await axios(getApplicationRequest);
+    const getApplicationResponse = await got(getApplicationRequest);
     contextLog('Got application', {
         request: getApplicationRequest,
         response: {
@@ -346,7 +348,7 @@ const updateApplication = async ({
 
     };
     try {
-        const updateApplicationResponse = await axios(updateApplicationRequest);
+        const updateApplicationResponse = await got(updateApplicationRequest);
         contextLog('Updated application', {
             request: updateApplicationRequest,
             response: {
@@ -399,7 +401,7 @@ const createOAuth2Application = async ({
 
     try {
         // https://docs.wso2.com/display/IS570/apidocs/OAuth2-dynamic-client-registration/#!/operations#OAuth2DCR#registerApplication
-        const { status, data } = await axios({
+        const { status, data } = await got({
             method: 'post',
             url: `${host}/api/identity/oauth2/dcr/v1.1/register`,
             auth: {
@@ -467,6 +469,7 @@ const createOAuth2Users = async ({
             },
             method: 'post',
             headers: {
+                Accept: 'application/json',
                 SOAPAction: 'urn:addUser',
                 'Content-Type': 'text/xml',
             },
@@ -486,7 +489,7 @@ const createOAuth2Users = async ({
             </soapenv:Envelope>`,
         };
         try {
-            const createUserResponse = await axios(createUserRequest);
+            const createUserResponse = await got(createUserRequest);
             contextLog('Created user', {
                 request: createUserRequest,
                 response: {
@@ -550,7 +553,7 @@ const registerOAuthApplication = async ({
                </soap:Body>
             </soap:Envelope>`
     };
-    const { status, data } = await axios(registerApplicationRequest);
+    const { status, data } = await got(registerApplicationRequest);
     contextLog('Registered OAuth application', {
         request: registerApplicationRequest,
         response: {
@@ -589,7 +592,7 @@ const getOAuthApplication = async ({
               </soap:Body>
             </soap:Envelope>`
     };
-    const { status, data } = await axios(getApplicationRequest);
+    const { status, data } = await got(getApplicationRequest);
     contextLog('Registered OAuth application', {
         request: getApplicationRequest,
         response: {
@@ -694,7 +697,7 @@ const updateOAuthApplication = async ({
                </soap:Body>
             </soap:Envelope>`
     };
-    const { status, data } = await axios(updateApplicationRequest);
+    const { status, data } = await got(updateApplicationRequest);
     contextLog('Updated OAuth application', {
         request: updateApplicationRequest,
         response: {
@@ -735,7 +738,7 @@ const deleteApplication = async ({
 </soapenv:Envelope>`
     };
     try {
-        const { status, data } = await axios(deleteApplicationRequest);
+        const { status, data } = await got(deleteApplicationRequest);
         contextLog('Deleted application', {
             request: deleteApplicationRequest,
             response: {
