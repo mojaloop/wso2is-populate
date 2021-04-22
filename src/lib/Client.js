@@ -1,6 +1,5 @@
-const axios = require('axios');
+const got = require('got');
 const check = require('check-types');
-const https = require('https');
 const contextLog = require('../lib/contextLog');
 
 const REQUEST_METHODS = {
@@ -50,19 +49,22 @@ class Client {
      * an error will be thrown.
      * @throws An exception if the provided parameters are invalid.
      */
-    constructor(config) {
-        validateConfiguration(config);
+    constructor({ host, credentials: { username, password } }) {
+        validateConfiguration({ host, credentials: { username, password } });
 
-        this.url = `${config.host}/scim2`;
-
-        this.client = axios;
-        this.client.defaults.baseURL = this.url;
-        this.client.defaults.headers['Content-Type'] = 'application/json';
-        this.client.defaults.headers.Accept = 'application/json';
-        this.client.defaults.httpsAgent = new https.Agent({
-            rejectUnauthorized: false,
+        this.client = got.extend({
+            prefixUrl: `${host}/scim2`,
+            headers: {
+                'Content-Type': 'application/json',
+                Accept: 'application/json',
+            },
+            https: {
+                rejectUnauthorized: false,
+            },
+            responseType: 'json',
+            username,
+            password,
         });
-        this.client.defaults.auth = config.credentials;
     }
 
     /**
