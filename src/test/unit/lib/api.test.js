@@ -39,7 +39,7 @@ describe('createOAuth2Application', () => {
         got.mockResolvedValue({
             response: {
                 status: 'whatever',
-                data: 'anything',
+                body: 'anything',
             },
         });
         // Just expect this not to throw
@@ -49,7 +49,7 @@ describe('createOAuth2Application', () => {
     it('correctly handles an application create when the application already exists', async () => {
         got.mockRejectedValue({
             response: {
-                data: {
+                body: {
                     error_description: 'Application with the name mfpserviceprovider already exist in the system',
                 },
             },
@@ -61,7 +61,7 @@ describe('createOAuth2Application', () => {
     it('fails on an error that is not "application already exists"', async () => {
         const result = {
             response: {
-                data: {
+                body: {
                     error_description: 'blah',
                 },
             },
@@ -94,7 +94,7 @@ describe('createOAuth2Users', () => {
         got.mockResolvedValue({
             response: {
                 status: 'whatever',
-                data: 'anything',
+                body: 'anything',
             },
         });
         await createOAuth2Users(usersArgs);
@@ -103,7 +103,7 @@ describe('createOAuth2Users', () => {
     it('correctly handles user creation when a user already exists', async () => {
         got.mockRejectedValue({
             response: {
-                data: {
+                body: {
                     Fault: {
                         faultstring: 'UserAlreadyExisting:Username already exists in the system. Please pick another username.',
                     },
@@ -116,7 +116,7 @@ describe('createOAuth2Users', () => {
     it('correctly propagates unhandled error', async () => {
         const result = {
             response: {
-                data: {
+                body: {
                     Fault: {
                         faultstring: 'whatever',
                     },

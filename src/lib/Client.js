@@ -26,14 +26,16 @@ async function makeRequest(client, method, url, body) {
     } catch (error) {
         // 409 means that the target entry already exists in WSO2IS.
         if (error.response == null || error.response.statusCode !== 409) {
-            contextLog(`${method.toUpperCase()} ${url} failed with error:`, error);
+            contextLog(`${method.toUpperCase()} ${url} failed with error:`, {
+                body: error?.response?.body,
+                statusCode: error?.response?.statusCode,
+            });
             contextLog('Request:', {
                 defaults: client.defaults,
                 method,
                 url,
                 body,
             });
-            contextLog(`Response body:`, error?.response?.body);
 
             throw error;
         }
