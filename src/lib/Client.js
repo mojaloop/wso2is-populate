@@ -14,21 +14,26 @@ function validateConfiguration(config) {
         && check.assert.nonEmptyString(config?.credentials?.username, 'Invalid username.');
 }
 
-async function makeRequest(client, type, route, data) {
+async function makeRequest(client, method, url, body) {
     try {
-        const response = await client[type](route, data);
-        return (response && response.data) || null;
+        const response = await client({
+            method,
+            url,
+            json: body,
+            responseType: 'json',
+        });
+        return (response && response.body) || null;
     } catch (error) {
         // 409 means that the target entry already exists in WSO2IS.
-        if (error.response == null || error.response.status !== 409) {
-            contextLog(`${type.toUpperCase()} ${route} failed with error:`, error.toJSON());
+        if (error.response == null || error.response.statusCode !== 409) {
+            contextLog(`${method.toUpperCase()} ${url} failed with error:`, error);
             contextLog('Request:', {
                 defaults: client.defaults,
-                type,
-                route,
-                data,
+                method,
+                url,
+                body,
             });
-            contextLog(`Response data:`, error?.response?.data);
+            contextLog(`Response body:`, error?.response?.body);
 
             throw error;
         }
@@ -75,7 +80,7 @@ class Client {
      * @returns {Array|null} The fetched users' data if returned by the API, null otherwise.
      */
     getUsers() {
-        return makeRequest(this.client, REQUEST_METHODS.GET, '/Users');
+        return makeRequest(this.client, REQUEST_METHODS.GET, 'Users');
     }
 
     /**
@@ -88,7 +93,7 @@ class Client {
      * @returns {Object|null} The fetched user data if returned by the API, null otherwise.
      */
     getUser(id) {
-        return makeRequest(this.client, REQUEST_METHODS.GET, `/Users/${id}`);
+        return makeRequest(this.client, REQUEST_METHODS.GET, `Users/${id}`);
     }
 
     /**
@@ -100,7 +105,7 @@ class Client {
      * @returns {Object|null} The imported user's data if returned by the API, null otherwise.
      */
     addUser(data) {
-        return makeRequest(this.client, REQUEST_METHODS.POST, '/Users', data);
+        return makeRequest(this.client, REQUEST_METHODS.POST, 'Users', data);
     }
 
     /**
@@ -123,7 +128,7 @@ class Client {
      * @returns {Array|null} The fetched roles' data if returned by the API, null otherwise.
      */
     getRoles() {
-        return makeRequest(this.client, REQUEST_METHODS.GET, '/Groups');
+        return makeRequest(this.client, REQUEST_METHODS.GET, 'Groups');
     }
 
     /**
@@ -136,7 +141,7 @@ class Client {
      * @returns {Object|null} The fetched role data if returned by the API, null otherwise.
      */
     getRole(id) {
-        return makeRequest(this.client, REQUEST_METHODS.GET, `/Groups/${id}`);
+        return makeRequest(this.client, REQUEST_METHODS.GET, `Groups/${id}`);
     }
 
     /**
@@ -148,7 +153,7 @@ class Client {
      * @returns {Object|null} The imported role's data if returned by the API, null otherwise.
      */
     addRole(data) {
-        return makeRequest(this.client, REQUEST_METHODS.POST, '/Groups', data);
+        return makeRequest(this.client, REQUEST_METHODS.POST, 'Groups', data);
     }
 
     /**

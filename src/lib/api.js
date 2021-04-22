@@ -8,6 +8,9 @@ const contextLog = require('./contextLog');
 //   Accept: application/json
 // when making calls to WSO2 IS IdentityApplicationManagementService. It has the habit of crashing
 // the handler and returning an HTML error page. (Yes, really, boy it's a great piece of software).
+//
+// In fact, it'll have a handler crash and return an HTML 500 if you look at it funny. It *is*
+// weak, but don't feel bad. Be a software darwinist and stop using it. Only the strong survive.
 
 const getToken = async ({
     clientKey: client_id,
@@ -17,6 +20,9 @@ const getToken = async ({
     password,
 }) => {
     const opts = {
+        https: {
+            rejectUnauthorized: false,
+        },
         method: 'POST',
         headers: {
             'Accept': 'application/json',
@@ -33,8 +39,9 @@ const getToken = async ({
         },
         url: `${host}/oauth2/token`,
     };
+    console.log('Trying to get a token', opts);
 
-    return got(opts);
+    return await got(opts).then(resp => resp.body);
 };
 
 const createApplication = async ({
@@ -44,10 +51,11 @@ const createApplication = async ({
     password = 'admin',
 }) => {
     const createApplicationRequest = {
-        auth: {
-            username,
-            password,
+        https: {
+            rejectUnauthorized: false,
         },
+        username,
+        password,
         method: 'post',
         headers: {
             Accept: '*/*',
@@ -55,7 +63,7 @@ const createApplication = async ({
             'Content-Type': 'application/soap+xml;charset=UTF-8',
         },
         url: `${host}/services/IdentityApplicationManagementService`,
-        data: `
+        body: `
             <soap:Envelope xmlns:soap="http://www.w3.org/2003/05/soap-envelope" xmlns:xsd="http://org.apache.axis2/xsd" xmlns:xsd1="http://model.common.application.identity.carbon.wso2.org/xsd">
                <soap:Header/>
                <soap:Body>
@@ -84,10 +92,11 @@ const getApplication = async ({
     password = 'admin',
 }) => {
     const getApplicationRequest = {
-        auth: {
-            username,
-            password,
+        https: {
+            rejectUnauthorized: false,
         },
+        username,
+        password,
         method: 'post',
         headers: {
             Accept: '*/*',
@@ -95,7 +104,7 @@ const getApplication = async ({
             'Content-Type': 'application/soap+xml;charset=UTF-8',
         },
         url: `${host}/services/IdentityApplicationManagementService.IdentityApplicationManagementServiceHttpsSoap12Endpoint`,
-        data: `
+        body: `
             <soap:Envelope xmlns:soap="http://www.w3.org/2003/05/soap-envelope" xmlns:xsd="http://org.apache.axis2/xsd">
                <soap:Header/>
                <soap:Body>
@@ -111,14 +120,14 @@ const getApplication = async ({
         request: getApplicationRequest,
         response: {
             status: getApplicationResponse.status,
-            data: getApplicationResponse.data,
+            body: getApplicationResponse.body,
         },
     });
     // TODO: we should either just use regex, or use a SOAP lib here. In this case, we end up using
     // an xml parser only to use regex anyway, because SOAP fills our tags with crap. Yo dawg, I
     // heard you like metadata, so I put some metadata in your metadata so you can suffer while you
     // suffer.
-    const responseData = parser.parse(getApplicationResponse.data);
+    const responseData = parser.parse(getApplicationResponse.body);
     contextLog('Response data', responseData);
     const responseContent = responseData['soapenv:Envelope']['soapenv:Body']['ns:getApplicationResponse']['ns:return'];
     const [,id] = Object.entries(responseContent).find(([k,]) => /^[a-z0-9]{6}:applicationID$/.test(k));
@@ -143,10 +152,11 @@ const updateApplication = async ({
     // From the "For OAuth" example here:
     // https://docs.wso2.com/display/IS570/Using+the+Service+Provider+API#UsingtheServiceProviderAPI-updateApplication
     const updateApplicationRequest = {
-        auth: {
-            username,
-            password,
+        https: {
+            rejectUnauthorized: false,
         },
+        username,
+        password,
         method: 'post',
         headers: {
             Accept: '*/*',
@@ -158,7 +168,7 @@ const updateApplication = async ({
         },
         url: `${host}/services/IdentityApplicationManagementService.IdentityApplicationManagementServiceHttpsSoap12Endpoint`,
 
-        data: `
+        body: `
 <soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:xsd="http://org.apache.axis2/xsd" xmlns:xsd1="http://model.common.application.identity.carbon.wso2.org/xsd">
    <soapenv:Header/>
    <soapenv:Body>
@@ -210,7 +220,7 @@ const updateApplication = async ({
 </soapenv:Envelope>`,
 
         // WORKS
-//         data: `
+//         body: `
 // <soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:xsd="http://org.apache.axis2/xsd" xmlns:xsd1="http://model.common.application.identity.carbon.wso2.org/xsd">
 //    <soapenv:Header/>
 //    <soapenv:Body>
@@ -294,7 +304,7 @@ const updateApplication = async ({
 //    </soapenv:Body>
 // </soapenv:Envelope>`,
 
-//         data: `
+//         body: `
 // <soap:Envelope xmlns:soap="http://www.w3.org/2003/05/soap-envelope" xmlns:xsd="http://org.apache.axis2/xsd" xmlns:xsd1="http://model.common.application.identity.carbon.wso2.org/xsd" xmlns:xsd2="http://script.model.common.application.identity.carbon.wso2.org/xsd">
 //    <soap:Header/>
 //    <soap:Body>
@@ -316,7 +326,7 @@ const updateApplication = async ({
 //    </soap:Body>
 // </soap:Envelope>`
 
-        // data: `
+        // body: `
         //    <soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/"
         //    xmlns:xsd="http://org.apache.axis2/xsd"
         //    xmlns:xsd1="http://model.common.application.identity.carbon.wso2.org/xsd">
@@ -353,11 +363,11 @@ const updateApplication = async ({
             request: updateApplicationRequest,
             response: {
                 status: updateApplicationResponse.status,
-                data: updateApplicationResponse.data,
+                body: updateApplicationResponse.body,
             },
         });
     } catch (err) {
-        if (err?.response?.data?.Fault?.faultstring !== 'UserAlreadyExisting:Username already exists in the system. Please pick another username.') {
+        if (err?.response?.body?.Fault?.faultstring !== 'UserAlreadyExisting:Username already exists in the system. Please pick another username.') {
             throw err;
         }
         const { status, data } = err.response;
@@ -404,11 +414,10 @@ const createOAuth2Application = async ({
         const { status, data } = await got({
             method: 'post',
             url: `${host}/api/identity/oauth2/dcr/v1.1/register`,
-            auth: {
-                username,
-                password,
-            },
-            data: {
+            username,
+            password,
+            responseType: 'json',
+            body: {
                 ext_param_client_id,
                 ext_param_client_secret,
                 client_name,
@@ -417,7 +426,7 @@ const createOAuth2Application = async ({
         });
         contextLog('Created application', { status, data });
     } catch (err) {
-        if (err?.response?.data?.error_description !== 'Application with the name mfpserviceprovider already exist in the system') {
+        if (err?.response?.body?.error_description !== 'Application with the name mfpserviceprovider already exist in the system') {
             throw err;
         }
         const { status, data } = err.response;
@@ -463,10 +472,12 @@ const createOAuth2Users = async ({
             .join('');
 
         const createUserRequest = {
-            auth: {
-                username,
-                password,
+            https: {
+                rejectUnauthorized: false,
             },
+            responseType: 'json',
+            username,
+            password,
             method: 'post',
             headers: {
                 Accept: 'application/json',
@@ -474,7 +485,7 @@ const createOAuth2Users = async ({
                 'Content-Type': 'text/xml',
             },
             url: `${host}/services/RemoteUserStoreManagerService`,
-            data:
+            body:
             `<soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:ser="http://service.ws.um.carbon.wso2.org" xmlns:xsd="http://common.mgt.user.carbon.wso2.org/xsd">
                 <soapenv:Header/>
                 <soapenv:Body>
@@ -489,19 +500,20 @@ const createOAuth2Users = async ({
             </soapenv:Envelope>`,
         };
         try {
-            const createUserResponse = await got(createUserRequest);
+            const response = await got(createUserRequest);
             contextLog('Created user', {
                 request: createUserRequest,
                 response: {
-                    status: createUserResponse.status,
-                    data: createUserResponse.data,
+                    statusCode: response.statusCode,
+                    body: response.body,
                 },
             });
         } catch (err) {
-            if (err?.response?.data?.Fault?.faultstring !== 'UserAlreadyExisting:Username already exists in the system. Please pick another username.') {
+            if (err?.response?.body?.Fault?.faultstring !== 'UserAlreadyExisting:Username already exists in the system. Please pick another username.') {
                 throw err;
             }
             const { status, data } = err.response;
+            // TODO: delete all users before recreating them
             contextLog('WARNING: user already existed, no checks are performed for correct configuration. Handled the following error response:', {
                 status,
                 data,
@@ -520,10 +532,11 @@ const registerOAuthApplication = async ({
     clientSecret,
 }) => {
     const registerApplicationRequest = {
-        auth: {
-            username,
-            password,
+        https: {
+            rejectUnauthorized: false,
         },
+        username,
+        password,
         method: 'post',
         headers: {
             Accept: '*/*',
@@ -531,7 +544,7 @@ const registerOAuthApplication = async ({
             'Content-Type': 'application/soap+xml;charset=UTF-8',
         },
         url: `${host}/services/OAuthAdminService`,
-        data: `
+        body: `
             <soap:Envelope xmlns:soap="http://www.w3.org/2003/05/soap-envelope" xmlns:xsd="http://org.apache.axis2/xsd" xmlns:xsd1="http://dto.oauth.identity.carbon.wso2.org/xsd">
                <soap:Header/>
                <soap:Body>
@@ -539,7 +552,7 @@ const registerOAuthApplication = async ({
                      <!--Optional:-->
                      <xsd:application>
                         <!--Optional:-->
-                        <xsd1:OAuthVersion>2.0</xsd1:OAuthVersion>
+                        <xsd1:OAuthVersion>OAuth-2.0</xsd1:OAuthVersion>
                         <!--Optional:-->
                         <xsd1:applicationName>${name}</xsd1:applicationName>
                         <!--Optional:-->
@@ -548,17 +561,18 @@ const registerOAuthApplication = async ({
                         <xsd1:grantTypes>password</xsd1:grantTypes>
                         <xsd1:oauthConsumerKey>${clientKey}</xsd1:oauthConsumerKey>
                         <xsd1:oauthConsumerSecret>${clientSecret}</xsd1:oauthConsumerSecret>
+                        <xsd1:tokenType>JWT</xsd1:tokenType>
                      </xsd:application>
                   </xsd:registerOAuthApplicationData>
                </soap:Body>
             </soap:Envelope>`
     };
-    const { status, data } = await got(registerApplicationRequest);
+    const response = await got(registerApplicationRequest);
     contextLog('Registered OAuth application', {
         request: registerApplicationRequest,
         response: {
-            status,
-            data,
+            statusCode: response.statusCode,
+            body: response.body,
         },
     });
 };
@@ -570,10 +584,11 @@ const getOAuthApplication = async ({
     password = 'admin',
 }) => {
     const getApplicationRequest = {
-        auth: {
-            username,
-            password,
+        https: {
+            rejectUnauthorized: false,
         },
+        username,
+        password,
         method: 'post',
         headers: {
             Accept: '*/*',
@@ -581,7 +596,7 @@ const getOAuthApplication = async ({
             'Content-Type': 'application/soap+xml;charset=UTF-8',
         },
         url: `${host}/services/OAuthAdminService`,
-        data: `
+        body: `
             <soap:Envelope xmlns:soap="http://www.w3.org/2003/05/soap-envelope" xmlns:xsd="http://org.apache.axis2/xsd">
               <soap:Header/>
               <soap:Body>
@@ -592,12 +607,12 @@ const getOAuthApplication = async ({
               </soap:Body>
             </soap:Envelope>`
     };
-    const { status, data } = await got(getApplicationRequest);
+    const response = await got(getApplicationRequest);
     contextLog('Registered OAuth application', {
         request: getApplicationRequest,
         response: {
-            status,
-            data,
+            statusCode: response.statusCode,
+            body: response.body,
         },
     });
     // const RE_DATE = /(?<year>[0-9]{4})-(?<month>[0-9]{2})-(?<day>[0-9]{2})/;
@@ -628,10 +643,11 @@ const updateOAuthApplication = async ({
     password = 'admin',
 }) => {
     const updateApplicationRequest = {
-        auth: {
-            username,
-            password,
+        https: {
+            rejectUnauthorized: false,
         },
+        username,
+        password,
         method: 'post',
         headers: {
             Accept: '*/*',
@@ -647,7 +663,7 @@ const updateOAuthApplication = async ({
         //     // 'Content-Type': 'application/soap+xml;charset=UTF-8;action="urn:updateApplication"',
         // },
         url: `${host}/services/IdentityApplicationManagementService`,
-        data: `
+        body: `
             <soap:Envelope xmlns:soap="http://www.w3.org/2003/05/soap-envelope" xmlns:xsd="http://org.apache.axis2/xsd" xmlns:xsd1="http://model.common.application.identity.carbon.wso2.org/xsd">
                <soap:Header/>
                <soap:Body>
@@ -697,12 +713,12 @@ const updateOAuthApplication = async ({
                </soap:Body>
             </soap:Envelope>`
     };
-    const { status, data } = await got(updateApplicationRequest);
+    const response = await got(updateApplicationRequest);
     contextLog('Updated OAuth application', {
         request: updateApplicationRequest,
         response: {
-            status,
-            data,
+            statusCode: response.statusCode,
+            body: response.body,
         },
     });
 };
@@ -714,10 +730,12 @@ const deleteApplication = async ({
     password = 'admin',
 }) => {
     const deleteApplicationRequest = {
-        auth: {
-            username,
-            password,
+        https: {
+            rejectUnauthorized: false,
         },
+        username,
+        password,
+        retry: 0,
         method: 'post',
         headers: {
             Accept: '*/*',
@@ -726,7 +744,7 @@ const deleteApplication = async ({
             // 'Content-Type': 'application/soap+xml;charset=UTF-8',
         },
         url: `${host}/services/IdentityApplicationManagementService`,
-        data: `
+        body: `
 <soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:xsd="http://org.apache.axis2/xsd">
    <soapenv:Header/>
    <soapenv:Body>
@@ -738,12 +756,12 @@ const deleteApplication = async ({
 </soapenv:Envelope>`
     };
     try {
-        const { status, data } = await got(deleteApplicationRequest);
+        const response = await got(deleteApplicationRequest);
         contextLog('Deleted application', {
             request: deleteApplicationRequest,
             response: {
-                status,
-                data,
+                statusCode: response.statusCode,
+                body: response.body,
             },
         });
     } catch (err) {
@@ -753,15 +771,15 @@ const deleteApplication = async ({
         // with insufficient privileges. This possibility was entirely out of scope of this module.
         // If this is a problem you, the reader, have, the author's recommendation for
         // circumventing this potential issue is to use software that isn't WSO2.
-        if (!/\>User not authorized\</.test(err?.response?.data)) { // /whatever/.test(undefined) returns false
+        if (!/\>User not authorized\</.test(err?.response?.body)) { // /whatever/.test(undefined) returns false
             throw err;
         }
-        const { status, data } = err.response;
+        const { statusCode, body } = err.response;
         contextLog('Application did not exist', {
             request: deleteApplicationRequest,
             response: {
-                status,
-                data,
+                statusCode,
+                body,
             },
         });
     }

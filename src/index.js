@@ -29,6 +29,17 @@ async function populate(conf, users) {
     // whether that's actually more to do with WSO2 leaving vestiges of the application lying
     // around. We _might_ need to wait some time after ostensibly deleting the application and
     // receiving the response from WSO2IS.
+    // Later evidence: it seems that after a while agitating, WSO2 no longer fully deletes an
+    // application. It could be a caching issue. Or it could be anything else at all, really.
+    // Anything. Don't constrain your search, the cause could be anything, or anywhere. Best to
+    // just not use WSO2 at all. Either that, or it's time for the montage where the protagonist
+    // becomes stronger to overcome the adversary. Unfortunately, this story will not have a happy
+    // ending.
+    // TODO:
+    // Later note: it *might* be that we need to "deregisterOAuthApplication" or something. I.e.,
+    // `deleteApplication` is not quite enough. Specifically, when `registerOAuthApplication` has
+    // been called, but `createApplication` has not, this creates a state where the application can
+    // neither be created nor deleted.
     await deleteApplication(conf.application);
     // Note that we have to call registerOAuthApplication before calling updateApplication.
     // Otherwise we will not be able to specify the consumer key and secret.
@@ -72,12 +83,16 @@ async function populate(conf, users) {
 
     console.log('STEP 7');
     const portaladmin = users.find(({ username }) => username === 'portaladmin');
-    contextLog('wso2 token', await getToken({
+    const wso2Token = await getToken({
         host: conf.host,
         username: portaladmin.username,
         password: portaladmin.password,
         ...conf.application,
-    }));
+    });
+    console.log(wso2Token);
+
+    console.log('STEP 8');
+
 }
 
 module.exports = { populate };
