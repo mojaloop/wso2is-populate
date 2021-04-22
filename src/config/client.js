@@ -38,7 +38,7 @@ const conf = {
         password: process.env.AUTHENTICATION_CREDENTIALS_PASSWORD || 'admin',
     },
     application: {
-        name: process.env.APPLICATION_NAME || 'portaloauthprovider',
+        name: process.env.APPLICATION_NAME || 'portaloauth',
         clientKey: process.env.AUTH_SERVER_CLIENTKEY || randomString({ length: 30 }),
         clientSecret: process.env.AUTH_SERVER_CLIENTSECRET || randomString({ length: 30 }),
     },
@@ -46,7 +46,7 @@ const conf = {
 
 assert(
     validateEnv(process.env),
-    `Config not valid. Errors: ${validateEnv.errors}`,
+    `Process environment not valid. Errors:\n${validateEnv?.errors?.map(err => JSON.stringify(err, null, 2))}`,
 );
 
 module.exports = conf;

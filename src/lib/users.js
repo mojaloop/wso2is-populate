@@ -12,7 +12,7 @@ const load = (users = rawUsers) => {
         items: {
             type: 'object',
             properties: {
-                name: {
+                username: {
                     type: 'string',
                 },
                 password: {
@@ -25,7 +25,7 @@ const load = (users = rawUsers) => {
                     },
                 },
             },
-            required: ['name', 'password', 'roles'],
+            required: ['username', 'password', 'roles'],
         },
     };
 
@@ -38,7 +38,7 @@ const load = (users = rawUsers) => {
 
     assert(
         (new Set(users.map(user => user.username))).size === users.length,
-        `Duplicate user name not allowed. Users: ${print(users)}`,
+        `Duplicate user username not allowed. Users: ${print(users)}`,
     );
 
     return users;
