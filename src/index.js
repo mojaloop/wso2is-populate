@@ -45,7 +45,16 @@ async function populate(conf, users) {
     // Later note: it *might* be that we need to "deregisterOAuthApplication" or something. I.e.,
     // `deleteApplication` is not quite enough. Specifically, when `registerOAuthApplication` has
     // been called, but `createApplication` has not, this creates a state where the application can
-    // neither be created nor deleted.
+    // neither be created nor deleted. The solution to this problem might have to be
+    // 1. try to delete
+    // 2. try to register
+    // 3. if registration fails, try to createApplication
+    // 4. if createApplication fails, fatal
+    // 5. if createApplication succeeds, proceeed?
+    // Does this mean we should ignore any "application already exists" errors from register,
+    // because they'll only come up if the application has not been truly created, only
+    // "registered"? And/or perhaps we could test whether the application exists before trying to
+    // delete it?
     await deleteApplication({
         host, name, username, password,
     });
@@ -92,6 +101,7 @@ async function populate(conf, users) {
     // TODO: it's possible that using the SCIM API will put "groups" on the user, instead of roles.
     // Then we won't need to modify the portal.
     console.log('STEP 6');
+    // TODO: delete users before creating them
     await createOAuth2Users({
         users,
         // TODO: why do we need to give the application role? What happens if we don't?
@@ -101,20 +111,20 @@ async function populate(conf, users) {
         password,
     });
 
-    console.log('STEP 7');
-    const portaladmin = users.find(({ username }) => username === 'portaladmin');
-    const wso2Token = await getToken({
-        host,
-        username: portaladmin.username,
-        password: portaladmin.password,
-        clientKey,
-        clientSecret,
-    });
-    console.log(wso2Token);
-
-    console.log('STEP 8');
-    const result = await getUserInfo({ token: wso2Token.access_token });
-    console.log(result);
+    // console.log('STEP 7');
+    // const portaladmin = users.find(({ username }) => username === 'portaladmin');
+    // const wso2Token = await getToken({
+    //     host,
+    //     username: portaladmin.username,
+    //     password: portaladmin.password,
+    //     clientKey,
+    //     clientSecret,
+    // });
+    // console.log(wso2Token);
+    //
+    // console.log('STEP 8');
+    // const result = await getUserInfo({ token: wso2Token.access_token });
+    // console.log(result);
 }
 
 module.exports = { populate };
