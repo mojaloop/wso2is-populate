@@ -2,15 +2,10 @@ const Client = require('./lib/Client');
 const config = require('./config/client');
 const defaultUsers = require('./lib/users');
 const {
-    createOAuth2Application,
     createOAuth2Users,
     getApplication,
     updateApplication,
     deleteApplication,
-    getToken,
-    getUserInfo,
-    getOAuthApplication,
-    updateOAuthApplication,
     createApplication,
     registerOAuthApplication,
 } = require('./lib/api');
@@ -25,11 +20,10 @@ async function populate(conf, users) {
     // We delete the application first. This is because, after extensive testing, it was discovered
     // that it's possible to update an application once, but subsequent updates will clear the
     // consumer secret.
-    console.log('STEP 0');
     const {
         host,
         credentials: { username, password },
-        application: { name, clientKey, clientSecret }
+        application: { name, clientKey, clientSecret },
     } = conf;
     // TODO: this doesn't seem to very reliably delete the application- although it's unclear
     // whether that's actually more to do with WSO2 leaving vestiges of the application lying
@@ -60,47 +54,30 @@ async function populate(conf, users) {
     });
     // Note that we have to call registerOAuthApplication before calling updateApplication.
     // Otherwise we will not be able to specify the consumer key and secret.
-    console.log('STEP 1');
+
     await registerOAuthApplication({
         host, name, username, password, clientKey, clientSecret,
     });
-    console.log('STEP 2');
+
     await createApplication({
         host, name, username, password,
     });
-    console.log('STEP 3');
+
     const { id } = await getApplication({
         host, name, username, password,
     });
 
-    console.log('STEP 4');
-    await updateOAuthApplication({
+    await updateApplication({
         host, id, name, clientKey, clientSecret, username, password,
     });
 
-    console.log('STEP 5');
     const roles = [...(new Set(users.flatMap(user => user.roles)))]
         .map(role => ({ displayName: role }));
     contextLog('Creating roles:', roles.map(r => r.displayName));
     await instance.addRoles(roles);
 
-    // await createOAuth2Application({
-    //     ...conf.application,
-    //     host: conf.host,
-    //     ...conf.credentials,
-    // });
-
-
-    // await updateApplication({
-    //     id,
-    //     host: conf.host,
-    //     ...conf.application,
-    //     ...conf.credentials,
-    // });
-
     // TODO: it's possible that using the SCIM API will put "groups" on the user, instead of roles.
     // Then we won't need to modify the portal.
-    console.log('STEP 6');
     // TODO: delete users before creating them. In fact, perhaps delete them at the same time as
     // deleting the application. And roles..? Basically wipe everything out, then recreate? This
     // way we won't have any misconfiguration at all.
