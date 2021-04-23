@@ -4,6 +4,9 @@ const users = require('../../../src/imports/users');
 describe('wso2is', () => {
     // TODO: attempt to recreate user, make sure duplicate username cannot exist
     // TODO: attempt to recreate application, make sure duplicate username cannot exist
+    // TODO: attempt to run whole wso2is-populate sequence twice and make sure it doesn't fail.
+    //       This probably needs to occur outside this file. Although perhaps it would make sense
+    //       to use the k8s API? Perhaps with/from a real programming language?
     const instance = got.extend({
         prefixUrl: process.env.WSO2IS_HOST || 'https://wso2is:9443/',
         https: { rejectUnauthorized: false },

@@ -101,7 +101,9 @@ async function populate(conf, users) {
     // TODO: it's possible that using the SCIM API will put "groups" on the user, instead of roles.
     // Then we won't need to modify the portal.
     console.log('STEP 6');
-    // TODO: delete users before creating them
+    // TODO: delete users before creating them. In fact, perhaps delete them at the same time as
+    // deleting the application. And roles..? Basically wipe everything out, then recreate? This
+    // way we won't have any misconfiguration at all.
     await createOAuth2Users({
         users,
         // TODO: why do we need to give the application role? What happens if we don't?
