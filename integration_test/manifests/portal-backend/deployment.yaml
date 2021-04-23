@@ -14,7 +14,7 @@ spec:
     spec:
       containers:
       - name: app
-        image: mojaloop/finance-portal-backend-service
+        image: mojaloop/finance-portal-backend-service:v15.0.0
         ports:
         - containerPort: 3002
         envFrom:
