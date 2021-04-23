@@ -40,6 +40,7 @@ describe('portal backend', () => {
     const instance = got.extend({
         prefixUrl: process.env.PORTAL_BACKEND_HOST || 'http://portal-backend/',
         method: 'post',
+        responseType: 'json',
     });
 
     const extractCreds = ({ username, password }) => ({ username, password });
@@ -48,8 +49,8 @@ describe('portal backend', () => {
         .headers['set-cookie'][0]
         .split(';')
         .filter(s => /^mojaloop-portal-token=[a-z0-9-_=]+\.[a-z0-9-_=]+\.?[a-z0-9-_.+/=]*$/i.test(s))[0];
-    const login = ({ username, password }) =>
-        instance({
+
+    const login = async ({ username, password }) => instance({
             url: 'login',
             json: {
                 username,
@@ -60,33 +61,44 @@ describe('portal backend', () => {
     // TODO: Decode the returned cookie and assert that it matches a certain pattern. At least so
     // we know what's inside it. Or don't- does it matter? Text-match it for the various
     // credentials we know about- the client id/secret, the user's creds?
-    test.concurrent.each(users.map(extractCreds))('allows login with %p', login);
+    test.each(users.map(extractCreds))('allows login with %p', login);
 
     const usersWithNdcUpdateRole = users
         .filter(u => u.roles.includes('ndc_update'))
         .map(extractCreds);
-    test.concurrent.each(usersWithNdcUpdateRole)('%p can modify NDC', async user => {
+    test.each(usersWithNdcUpdateRole)('%p can modify NDC', async user => {
         const { cookie } = await login(user);
-        console.log({ cookie });
-        await expect(instance({
-            url: 'netdebitcap/5',
-            headers: {
-                cookie,
-            },
-        }));
-    });
-
-    const usersWithoutNdcUpdateRole = users
-        .filter(u => !u.roles.includes('ndc_update'))
-        .map(extractCreds);
-    test.concurrent.each(usersWithoutNdcUpdateRole)('%p cannot modify NDC', async user => {
-        const { cookie } = await login(user);
-        console.log({ cookie });
+        // TODO: unfortunately, the backend returns 500, which could've been caused by anything.
+        // This isn't really good enough, what we really need is to test that the response is in
+        // {200,202,204}. The problem at the time of writing is that this would require spinning up
+        // mysql + central settlement, then creating some participants. The next problem is that
+        // requires the schema to be in place. Which probably requires an instance of central
+        // ledger admin to create the db schema. Which starts to become a rabbit-hole. But has to
+        // be done sooner or later..
         await expect(instance({
             url: 'netdebitcap/5',
             headers: {
                 cookie,
             },
         })).rejects.not.toThrow('Response code 401 (Unauthorized)');
+    });
+
+    const usersWithoutNdcUpdateRole = users
+        .filter(u => !u.roles.includes('ndc_update'))
+        .map(extractCreds);
+    test.each(usersWithoutNdcUpdateRole)('%p cannot modify NDC', async user => {
+        expect.assertions(2);
+        const { cookie } = await login(user);
+        try {
+            await instance({
+                url: 'netdebitcap/5',
+                headers: {
+                    cookie,
+                },
+            })
+        } catch (err) {
+            expect(err.message).toEqual('Response code 401 (Unauthorized)');
+            expect(err.response.body).toEqual({ message: 'Forbidden' });
+        }
     });
 });
