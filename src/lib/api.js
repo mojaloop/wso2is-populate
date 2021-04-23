@@ -25,14 +25,15 @@ const validateToken = async ({
         responseType: 'json',
         url: `${host}/oauth2/introspect`,
     };
-    console.log('Trying to validate token', opts);
+    contextLog('Trying to validate token', opts);
 
     try {
-    return await got(opts).then(resp => resp.body);
+        return await got(opts).then(resp => resp.body);
     } catch (err) {
-        console.log(err.response.statusCode);
-        console.log(err.response.body);
-        throw new Error('dong');
+        if (err.response) {
+            throw new Error(`Error response from server ${err.response.statusCode} ${JSON.stringify(err.response.body, null, 2)}`);
+        }
+        throw err;
     }
 };
 
@@ -51,14 +52,15 @@ const getUserInfo = async ({
         responseType: 'json',
         url: `${host}/oauth2/userinfo`,
     };
-    console.log('Trying to get user info', opts);
+    contextLog('Trying to get user info', opts);
 
     try {
-    return await got(opts).then(resp => resp.body);
+        return await got(opts).then(resp => resp.body);
     } catch (err) {
-        console.log(err.response.statusCode);
-        console.log(err.response.body);
-        throw new Error('dong');
+        if (err.response) {
+            throw new Error(`Error response from server ${err.response.statusCode} ${JSON.stringify(err.response.body, null, 2)}`);
+        }
+        throw err;
     }
 };
 
@@ -89,7 +91,7 @@ const getToken = async ({
         },
         url: `${host}/oauth2/token`,
     };
-    console.log('Trying to get a token', opts);
+    contextLog('Trying to get a token', opts);
 
     return await got(opts).then(resp => resp.body);
 };
@@ -117,11 +119,11 @@ const createApplication = async ({
             <soap:Envelope xmlns:soap="http://www.w3.org/2003/05/soap-envelope" xmlns:xsd="http://org.apache.axis2/xsd" xmlns:xsd1="http://model.common.application.identity.carbon.wso2.org/xsd">
                <soap:Header/>
                <soap:Body>
-                  <xsd:createApplication> 
-                  <xsd:serviceProvider> 
-                        <xsd1:applicationName>${name}</xsd1:applicationName> 
-                     </xsd:serviceProvider> 
-                  </xsd:createApplication> 
+                  <xsd:createApplication>
+                  <xsd:serviceProvider>
+                        <xsd1:applicationName>${name}</xsd1:applicationName>
+                     </xsd:serviceProvider>
+                  </xsd:createApplication>
                </soap:Body>
             </soap:Envelope>`,
     };
@@ -674,7 +676,7 @@ const getOAuthApplication = async ({
     // const day = matchObj.groups.day; // 31
     //
     // console.log(year,month,day);
-    // const id = 
+    // const id =
 };
 
 const updateOAuthApplication = async ({
@@ -724,9 +726,33 @@ const updateOAuthApplication = async ({
                         <xsd1:applicationID>${id}</xsd1:applicationID>
                         <xsd1:applicationName>${name}</xsd1:applicationName>
                         <xsd1:claimConfig>
+                           <!--Optional:-->
                            <xsd1:alwaysSendMappedLocalSubjectId>false</xsd1:alwaysSendMappedLocalSubjectId>
+                           <!--Zero or more repetitions:-->
+                           <xsd1:claimMappings>
+                              <!--Optional:-->
+                              <xsd1:localClaim>
+                                 <!--Optional:-->
+                                 <xsd1:claimUri>http://wso2.org/claims/role</xsd1:claimUri>
+                              </xsd1:localClaim>
+                              <!--Optional:-->
+                              <xsd1:mandatory>true</xsd1:mandatory>
+                              <!--Optional:-->
+                              <xsd1:remoteClaim>
+                                 <!--Optional:-->
+                                 <xsd1:claimUri>role</xsd1:claimUri>
+                              </xsd1:remoteClaim>
+                              <!--Optional:-->
+                              <xsd1:requested>true</xsd1:requested>
+                           </xsd1:claimMappings>
+                           <!--Optional:-->
+                           <xsd1:localClaimDialect>false</xsd1:localClaimDialect>
+                           <!--Optional:-->
+                           <xsd1:roleClaimURI>role</xsd1:roleClaimURI>
+                           <!--Optional:-->
+                           <xsd1:userClaimURI>user</xsd1:userClaimURI>
                         </xsd1:claimConfig>
-                        <xsd1:description>oauth application</xsd1:description>
+                        <xsd1:description>portal oauth application</xsd1:description>
                         <xsd1:inboundAuthenticationConfig>
                            <xsd1:inboundAuthenticationRequestConfigs>
                               <xsd1:inboundAuthKey>${clientKey}</xsd1:inboundAuthKey>
@@ -747,12 +773,13 @@ const updateOAuthApplication = async ({
                            <xsd1:provisioningEnabled>false</xsd1:provisioningEnabled>
                            <xsd1:provisioningUserStore>PRIMARY</xsd1:provisioningUserStore>
                         </xsd1:inboundProvisioningConfig>
-                         <xsd1:localAndOutBoundAuthenticationConfig> <xsd1:alwaysSendBackAuthenticatedListOfIdPs>false</xsd1:alwaysSendBackAuthenticatedListOfIdPs> 
-                           <xsd1:authenticationStepForAttributes xsd:nil="true"/> 
-                           <xsd1:authenticationStepForSubject xsd:nil="true"/> 
-                           <xsd1:authenticationType>default</xsd1:authenticationType> 
-                           <xsd1:subjectClaimUri xsd:nil="true">http://wso2.org/claims/role</xsd1:subjectClaimUri> 
-                        </xsd1:localAndOutBoundAuthenticationConfig> 
+                         <xsd1:localAndOutBoundAuthenticationConfig> <xsd1:alwaysSendBackAuthenticatedListOfIdPs>false</xsd1:alwaysSendBackAuthenticatedListOfIdPs>
+                           <xsd1:authenticationStepForAttributes xsd:nil="true"/>
+                           <xsd1:authenticationStepForSubject xsd:nil="true"/>
+                           <xsd1:authenticationType>default</xsd1:authenticationType>
+                           <xsd1:subjectClaimUri xsd:nil="true">http://wso2.org/claims/role</xsd1:subjectClaimUri>
+                           <xsd1:subjectClaimUri xsd:nil="true">http://wso2.org/claims/group</xsd1:subjectClaimUri>
+                        </xsd1:localAndOutBoundAuthenticationConfig>
                         <xsd1:outboundProvisioningConfig>
                            <xsd1:provisionByRoleList xsd:nil="true"/>
                         </xsd1:outboundProvisioningConfig>
