@@ -115,6 +115,8 @@ const createApplication = async ({
     username = 'admin',
     password = 'admin',
 }) => {
+    assert.ok(name, 'name parameter is required');
+
     const createApplicationRequest = {
         https: {
             rejectUnauthorized: false,
