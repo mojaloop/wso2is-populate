@@ -106,8 +106,8 @@ class Client {
      * @param {Object} data - The user's data to import into WSO2IS.
      * @returns {Object|null} The imported user's data if returned by the API, null otherwise.
      */
-    addUser(data) {
-        return makeRequest(this.client, REQUEST_METHODS.POST, 'Users', data);
+    addUser({ username: userName, ...rest }) {
+        return makeRequest(this.client, REQUEST_METHODS.POST, 'Users', { userName, ...rest });
     }
 
     /**
