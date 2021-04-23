@@ -1,6 +1,5 @@
 const assert = require('assert').strict;
 const got = require('got');
-const parser = require('fast-xml-parser');
 
 const contextLog = require('./contextLog');
 
@@ -190,14 +189,13 @@ const getApplication = async ({
             body: getApplicationResponse.body,
         },
     });
-    // TODO: we should either just use regex, or use a SOAP lib here. In this case, we end up using
-    // an xml parser only to use regex anyway, because SOAP fills our tags with crap. Yo dawg, I
-    // heard you like metadata, so I put some metadata in your metadata so you can suffer while you
-    // suffer.
-    const responseData = parser.parse(getApplicationResponse.body);
-    contextLog('Response data', responseData);
-    const responseContent = responseData['soapenv:Envelope']['soapenv:Body']['ns:getApplicationResponse']['ns:return'];
-    const [,id] = Object.entries(responseContent).find(([k,]) => /^[a-z0-9]{6}:applicationID$/.test(k));
+    // We should either just use regex, or use a SOAP lib here. At one point in the development of
+    // this code, an xml parser was used, only to use regex anyway, because SOAP fills our tags
+    // with crap. The official motto of SOAP is, after all:
+    //
+    // > yo dawg, I heard you like metadata, so I put some metadata in your metadata so you can
+    // > suffer while you suffer.
+    const { id } = /applicationID\>(?<id>[0-9]+)\<\//.exec(getApplicationResponse.body).groups;
     return { id };
 };
 
@@ -509,8 +507,10 @@ const deleteApplication = async ({
         // It's possible that WSO2 might return this error if it's called with a non-admin user
         // with insufficient privileges. This possibility was entirely out of scope of this module.
         // If this is a problem you, the reader, have, the author's recommendation for
-        // circumventing this potential issue is to use software that isn't WSO2.
-        if (!/\>User not authorized\</.test(err?.response?.body)) { // /whatever/.test(undefined) returns false
+        // circumventing this potential issue is to use any software that isn't WSO2. It's said
+        // that below 1000 users, and above 999 users a telephone for authentication is more
+        // cost-effective than WSO2.
+        if (!/\>User not authorized\</.test(err?.response?.body)) { // NB: /whatever/.test(undefined) returns false
             throw err;
         }
         const { statusCode, body } = err.response;
@@ -531,6 +531,7 @@ module.exports = {
     getApplication,
     registerOAuthApplication,
     deleteApplication,
+    // These are conveniences for development. There are no tests for them.
     untested: {
         getUserInfo,
         getToken,
