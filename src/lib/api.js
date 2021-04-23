@@ -11,6 +11,9 @@ const contextLog = require('./contextLog');
 //
 // In fact, it'll have a handler crash and return an HTML 500 if you look at it funny. It *is*
 // weak, but don't feel bad. Be a software darwinist and stop using it. Only the strong survive.
+//
+// Upstream docs:
+// https://docs.wso2.com/display/IS570/Using+the+Service+Provider+API
 
 const validateToken = async ({
     token,
