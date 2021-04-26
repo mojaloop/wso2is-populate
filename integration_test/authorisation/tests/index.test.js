@@ -35,9 +35,10 @@ describe('wso2is', () => {
         expect(result).toEqual({
             access_token: expect.stringMatching(jwtRegex),
             refresh_token: expect.stringMatching(uuidv4regex),
-            scope: "default",
+            scope: "openid",
             token_type: "Bearer",
             expires_in: expect.any(Number),
+            id_token: expect.any(String),
         });
     });
 })
