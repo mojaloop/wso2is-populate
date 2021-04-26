@@ -14,6 +14,8 @@ const load = (users = rawUsers) => {
             properties: {
                 username: {
                     type: 'string',
+                    // Disallow "admin" as it is WSO2-reserved
+                    pattern: '^(?!admin$)',
                 },
                 password: {
                     type: 'string',
