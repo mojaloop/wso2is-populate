@@ -1,75 +1,129 @@
 # WSO2 Identity Server Populate
-A standalone script that can be used as a wrapper around an WSO2 Identity Server 
-in order to import users and roles into it.
-
-It interacts with:
-
-- WSO2 Identity Server.
+A standalone script that can be used to initialise an WSO2 Identity Server with
+* an OAuth2 authentication server 
+* preconfigured users
+* preconfigured user roles
 
 Information about WSO2IS REST API can be found here:
 
 * https://docs.wso2.com/display/IS570/apidocs/SCIM2-endpoints/
 * https://docs.wso2.com/display/IS570/Using+the+SCIM+2.0+REST+APIs
 
+Information about the SOAP API used can be found here:
+
+* https://docs.wso2.com/display/IS570/Using+the+Service+Provider+API
+
 ### Installation
 ```
 cd src
-npm install
+npm ci
 ```
 
 ### Configuration
-Edit `config/client.js` with the appropriate values. 
+1.  Set values in your environment as described below:
 
-The configuration parameters are described below:
+    | Environment var name                | Description                                                                                          | Default                                             |
+    | ----------------------------------- | ---------------------------------------------------------------------------------------------------- | --------------------------------------------------- |
+    | WSO2_HOST                           | The URL and port number for the WSO2 Identity Server instance                                        | `https://localhost:9443`                            |
+    | AUTHENTICATION_CREDENTIALS_USERNAME | The username of the WSO2 admin user                                                                  | `admin`                                             |
+    | AUTHENTICATION_CREDENTIALS_USERNAME | The password of the WSO2 admin user                                                                  | `admin`                                             |
+    | APPLICATION_NAME                    | The desired name of the WSO2 "application" (also known as a "service provider") that will be created | `portaloauth`                                       |
+    | AUTH_SERVER_CLIENTKEY               | The key that will be used to identify the aforementioned application                                 | A random string that matches `/^[A-Za-z0-0_]{30}$/` |
+    | AUTH_SERVER_CLIENTSECRET            | The secret string that will be used to identify the aforementioned application                       | A random string that matches `/^[A-Za-z0-0_]{30}$/` |
 
-* The WSO2IS listening host (string) - `http.host`;
-* The WSO2IS listening port (number) - `http.port`;
-* The WSO2IS SCIM 2.0 REST API endpoint (string) (optional) - `http.endpoint`;
-* The timeout in milliseconds before a request to WSO2IS is rejected (number) - `http.timeout`;
-* The authentication used to communicate with WSO2IS (string) - `authentication.type`;
-* The credentials used for the authentication agains WSO2IS (object) - `authentication.credentials`;
+    Note that using a user that does not have full admin permissions has not been tested and is not
+    advised. It may fail in unexpected ways.
 
-```
-    {
-        http: {
-            host: <string>,
-            port: <number>,
-            endpoint: <string>,
-            timeout: <number>
-        },
-        authentication: {
-            type: <string>,
-            credentials: <object>
-        }
-    }
-```
-
-### Imports
-Populate the following files with the desired entries that should be imported into the server: 
-
-* `imports/users.json` - It should contain all the desired users to be imported.
-* `imports/roles.json` - It should contain all the desired roles to be imported, optionally among with their corresponding members.
-There are two cases for the members:
-
-  1.  a role's member that already exists and is not imported now - then the object must contain the property 
-  `"value": "<user ID>"` that should be populated by the user prior the run of the script.
-  2. a role's member that is imported now via the `imports/users.json` definition. 
-  In this case the ID will be populated by the script, so the property `"value"` should not be populated by the user.
-
-**Note**: If an entry to be imported from the above files already exists inside the WSO2IS it will be ignored.
+2.  Populate the `imports/users.json` file with the desired entries. Defaults exist in the existing
+    file.
 
 ### Running
+
+Start a properly configured (by the volume-mounted config file) WSO2 instance:
+```sh
+docker run \
+    -p 9443:9443 \
+    --name=wso2 \
+    --network=portal-net \
+    --rm \
+    --volume=$PWD/integration_test/manifests/wso2is/identity.xml:/home/wso2carbon/wso2is-km-5.7.0/repository/conf/identity/identity.xml \
+    wso2/wso2is-km:5.7.0
 ```
-cd src
+
+Install dependencies and run the application:
+```sh
 npm run start
-``` 
+```
 
 ### Testing
 #### Unit tests
-```
-cd src
+```sh
 npm run test
 ```
-#### Manual tests
-In order to test locally the functionalities of the script against a demo WSO2IS, build a docker container by 
-following the instructions that can be found here https://github.com/wso2/docker-is/tree/master/dockerfiles/ubuntu/is
+
+#### Integration tests
+1.  Get yourself a Kubernetes cluster. This is left as an exercise for the reader. However, some
+    recommended solutions:
+    1.  k3d on your local machine
+    2.  DigitalOcean, easy to set up an account + billing, then for a single-node cluster in region
+        _London 1_:
+        ```sh
+        doctl kubernetes cluster create pah \
+            --region lon1 \
+            --count 1 \
+            --size 's-2vcpu-4gb' \
+            --wait
+        ```
+        See regions with `doctl compute region list`.
+    3.  Minikube. The author cannot speak to this solution.
+    4.  Don't bother, instead push your changes to a branch and check out the result of the
+        ![integration test run](https://github.com/modusintegration/wso2is-populate/actions)
+
+2.  If your cluster is well-supported by Skaffold (such as `k3d`, perhaps Minikube?), your image
+    will be built and pushed direct to the cluster nodes when you run:
+    ```sh
+    skaffold run
+    ```
+    If it is not, you will need to
+    1. Get access to a docker registry you can push to and pull from
+    2. Add your credentials to `./integration_test/local/.dockerconfigjson` according to these
+       instructions: https://kubernetes.io/docs/tasks/configure-pod-container/pull-image-private-registry/.
+       Be _very_ careful not to share these. There is a `.gitignore` file to reduce the likelihood
+       you will do this.
+    3. Run Skaffold with
+        ```sh
+        skaffold run -d your-registry-uri.tld
+        ```
+       For GHCR, for example:
+        ```sh
+        skaffold run -d ghcr.io/your-github-username
+        ```
+
+##### Force run
+This will force changes to jobs, statefulsets, etc.
+```sh
+skaffold run -d your-registry.io --force
+```
+
+##### Running with a different version of the portal
+1.  Clone the finance portal repo
+    ```sh
+    git clone https://github.com/mojaloop/finance-portal-backend-service
+    ```
+2.  Modify the `build` section of `skaffold.yaml` to add this section. Change
+    `build.artifacts[0].context` (current value of
+    `/your/local/path/to/local/clone/of/finance-portal-backend-service`) to be the path to your
+    local clone of the portal backend:
+    ```yaml
+    build:
+      artifacts:
+      - image: mojaloop/finance-portal-backend-service
+        context: /your/local/path/to/local/clone/of/finance-portal-backend-service
+        docker:
+          dockerfile: Dockerfile
+      - image: ghcr.io/modusintegration/wso2is-populate
+        docker:
+          dockerfile: Dockerfile
+    ```
+3.  Make local changes to your local clone of the portal backend, then `skaffold run` (or `skaffold
+    run -d your-registry-uri.tld`) to see your changes in your cluster.

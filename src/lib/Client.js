@@ -1,11 +1,12 @@
-const axios = require('axios');
+const assert = require('assert').strict;
+const got = require('got');
 const check = require('check-types');
-const https = require('https');
 const contextLog = require('../lib/contextLog');
 
 const REQUEST_METHODS = {
     GET: 'get',
     POST: 'post',
+    DELETE: 'delete',
 };
 
 function validateConfiguration(config) {
@@ -15,21 +16,28 @@ function validateConfiguration(config) {
         && check.assert.nonEmptyString(config?.credentials?.username, 'Invalid username.');
 }
 
-async function makeRequest(client, type, route, data) {
+async function makeRequest(client, method, url, body) {
     try {
-        const response = await client[type](route, data);
-        return (response && response.data) || null;
+        const response = await client({
+            method,
+            url,
+            json: body,
+            responseType: 'json',
+        });
+        return (response && response.body) || null;
     } catch (error) {
         // 409 means that the target entry already exists in WSO2IS.
-        if (error.response == null || error.response.status !== 409) {
-            contextLog(`${type.toUpperCase()} ${route} failed with error:`, error.toJSON());
+        if (error.response == null || error.response.statusCode !== 409) {
+            contextLog(`${method.toUpperCase()} ${url} failed with error:`, {
+                body: error?.response?.body,
+                statusCode: error?.response?.statusCode,
+            });
             contextLog('Request:', {
                 defaults: client.defaults,
-                type,
-                route,
-                data,
+                method,
+                url,
+                body,
             });
-            contextLog(`Response data:`, error?.response?.data);
 
             throw error;
         }
@@ -50,19 +58,22 @@ class Client {
      * an error will be thrown.
      * @throws An exception if the provided parameters are invalid.
      */
-    constructor(config) {
-        validateConfiguration(config);
+    constructor({ host, credentials: { username, password } }) {
+        validateConfiguration({ host, credentials: { username, password } });
 
-        this.url = `${config.host}/scim2`;
-
-        this.client = axios;
-        this.client.defaults.baseURL = this.url;
-        this.client.defaults.headers['Content-Type'] = 'application/json';
-        this.client.defaults.headers.Accept = 'application/json';
-        this.client.defaults.httpsAgent = new https.Agent({
-            rejectUnauthorized: false,
+        this.client = got.extend({
+            prefixUrl: `${host}/scim2`,
+            headers: {
+                'Content-Type': 'application/json',
+                Accept: 'application/json',
+            },
+            https: {
+                rejectUnauthorized: false,
+            },
+            responseType: 'json',
+            username,
+            password,
         });
-        this.client.defaults.auth = config.credentials;
     }
 
     /**
@@ -73,7 +84,7 @@ class Client {
      * @returns {Array|null} The fetched users' data if returned by the API, null otherwise.
      */
     getUsers() {
-        return makeRequest(this.client, REQUEST_METHODS.GET, '/Users');
+        return makeRequest(this.client, REQUEST_METHODS.GET, 'Users');
     }
 
     /**
@@ -86,7 +97,25 @@ class Client {
      * @returns {Object|null} The fetched user data if returned by the API, null otherwise.
      */
     getUser(id) {
-        return makeRequest(this.client, REQUEST_METHODS.GET, `/Users/${id}`);
+        return makeRequest(this.client, REQUEST_METHODS.GET, `Users/${id}`);
+    }
+
+    async deleteUsers(usersToDelete) {
+        assert(usersToDelete.every(u => u.username), 'All users to delete must have username property');
+        // WARNING: This request "supports" pagination. We don't supply any pagination parameters
+        // and although it looks as though this means it will not paginate, it's not clear from the
+        // documentation whether it will paginate its response by default. Because of time
+        // constraints, this was not investigated and we assume it does not. If you, the reader,
+        // resent me, the author right now, consider this just one more reason to not use WSO2.
+        const userIdsToDelete = await this.getUsers().then(
+            res => res.Resources
+                .filter(({ userName }) => usersToDelete.some(({ username }) => username === userName))
+                .map(({ id }) => id)
+        );
+
+        return Promise.all(userIdsToDelete.map(
+            id => makeRequest(this.client, REQUEST_METHODS.DELETE, `Users/${id}`)
+        ));
     }
 
     /**
@@ -97,8 +126,8 @@ class Client {
      * @param {Object} data - The user's data to import into WSO2IS.
      * @returns {Object|null} The imported user's data if returned by the API, null otherwise.
      */
-    addUser(data) {
-        return makeRequest(this.client, REQUEST_METHODS.POST, '/Users', data);
+    addUser({ username: userName, ...rest }) {
+        return makeRequest(this.client, REQUEST_METHODS.POST, 'Users', { userName, ...rest });
     }
 
     /**
@@ -109,7 +138,7 @@ class Client {
      * @param {Array} users - The users data to import into WSO2IS.
      * @returns {Array} The added users' data if returned by the API.
      */
-    async addUsers(users) {
+    addUsers(users) {
         return Promise.all(users.map(user => this.addUser(user)));
     }
 
@@ -121,7 +150,7 @@ class Client {
      * @returns {Array|null} The fetched roles' data if returned by the API, null otherwise.
      */
     getRoles() {
-        return makeRequest(this.client, REQUEST_METHODS.GET, '/Groups');
+        return makeRequest(this.client, REQUEST_METHODS.GET, 'Groups');
     }
 
     /**
@@ -134,7 +163,7 @@ class Client {
      * @returns {Object|null} The fetched role data if returned by the API, null otherwise.
      */
     getRole(id) {
-        return makeRequest(this.client, REQUEST_METHODS.GET, `/Groups/${id}`);
+        return makeRequest(this.client, REQUEST_METHODS.GET, `Groups/${id}`);
     }
 
     /**
@@ -146,7 +175,7 @@ class Client {
      * @returns {Object|null} The imported role's data if returned by the API, null otherwise.
      */
     addRole(data) {
-        return makeRequest(this.client, REQUEST_METHODS.POST, '/Groups', data);
+        return makeRequest(this.client, REQUEST_METHODS.POST, 'Groups', data);
     }
 
     /**

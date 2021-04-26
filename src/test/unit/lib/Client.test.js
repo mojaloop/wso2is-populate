@@ -218,7 +218,7 @@ describe('Client', () => {
                     await client.getUsers();
 
                     expect(makeRequestStub).toHaveBeenCalledTimes(1);
-                    expect(makeRequestStub).toHaveBeenCalledWith(axiosStub, 'get', '/Users');
+                    expect(makeRequestStub).toHaveBeenCalledWith(axiosStub, 'get', 'Users');
                 });
             });
         });
@@ -231,7 +231,7 @@ describe('Client', () => {
                     await client.getUser(mockId);
 
                     expect(makeRequestStub).toHaveBeenCalledTimes(1);
-                    expect(makeRequestStub).toHaveBeenCalledWith(axiosStub, 'get', `/Users/${mockId}`);
+                    expect(makeRequestStub).toHaveBeenCalledWith(axiosStub, 'get', `Users/${mockId}`);
                 });
             });
         });
@@ -246,7 +246,7 @@ describe('Client', () => {
                     await client.addUser(mockUserData);
 
                     expect(makeRequestStub).toHaveBeenCalledTimes(1);
-                    expect(makeRequestStub).toHaveBeenCalledWith(axiosStub, 'post', '/Users', mockUserData);
+                    expect(makeRequestStub).toHaveBeenCalledWith(axiosStub, 'post', 'Users', mockUserData);
                 });
             });
         });
@@ -281,7 +281,7 @@ describe('Client', () => {
                     await client.getRoles();
 
                     expect(makeRequestStub).toHaveBeenCalledTimes(1);
-                    expect(makeRequestStub).toHaveBeenCalledWith(axiosStub, 'get', '/Groups');
+                    expect(makeRequestStub).toHaveBeenCalledWith(axiosStub, 'get', 'Groups');
                 });
             });
         });
@@ -294,7 +294,7 @@ describe('Client', () => {
                     await client.getRole(mockId);
 
                     expect(makeRequestStub).toHaveBeenCalledTimes(1);
-                    expect(makeRequestStub).toHaveBeenCalledWith(axiosStub, 'get', `/Groups/${mockId}`);
+                    expect(makeRequestStub).toHaveBeenCalledWith(axiosStub, 'get', `Groups/${mockId}`);
                 });
             });
         });
@@ -309,7 +309,7 @@ describe('Client', () => {
                     await client.addRole(mockRoleData);
 
                     expect(makeRequestStub).toHaveBeenCalledTimes(1);
-                    expect(makeRequestStub).toHaveBeenCalledWith(axiosStub, 'post', '/Groups', mockRoleData);
+                    expect(makeRequestStub).toHaveBeenCalledWith(axiosStub, 'post', 'Groups', mockRoleData);
                 });
             });
         });
@@ -369,44 +369,32 @@ describe('Client', () => {
 
     describe('Private functions:', () => {
         describe('makeRequest:', () => {
-            const mockResponse = {
-                data: {
-                    foo: 'bar',
-                },
-            };
-            let clientStub;
-
-            beforeEach(() => {
-                clientStub = {
-                    get: jest.fn(async () => mockResponse),
-                };
-            });
 
             describe('Failures:', () => {
                 it('throws an error if the external request fails with a status code other than 409.', async () => {
                     const mockError = {
                         response: {
-                            status: 500,
+                            statusCode: 500,
                         },
                     };
 
-                    clientStub.get = jest.fn(async () => {
+                    clientStub = jest.fn(async () => {
                         throw new Error(mockError);
                     });
 
                     /* eslint-disable-next-line no-underscore-dangle */
-                    await expect(Client.__get__('makeRequest')(clientStub, 'get', '/Users')).rejects.toThrow();
-                    expect(clientStub.get).toHaveBeenCalledTimes(1);
+                    await expect(Client.__get__('makeRequest')(clientStub, 'get', 'Users')).rejects.toThrow();
+                    expect(clientStub).toHaveBeenCalledTimes(1);
                 });
 
                 it('throws an error if the external request fails with any error.', async () => {
-                    clientStub.get = jest.fn(async () => {
+                    clientStub = jest.fn(async () => {
                         throw new Error('Fake error');
                     });
 
                     /* eslint-disable-next-line no-underscore-dangle */
-                    await expect(Client.__get__('makeRequest')(clientStub, 'get', '/Users')).rejects.toThrow();
-                    expect(clientStub.get).toHaveBeenCalledTimes(1);
+                    await expect(Client.__get__('makeRequest')(clientStub, 'get', 'Users')).rejects.toThrow();
+                    expect(clientStub).toHaveBeenCalledTimes(1);
                 });
             });
 
@@ -414,27 +402,33 @@ describe('Client', () => {
                 it('does not throw an error if the external request fails with status code 409.', async () => {
                     const mockError = {
                         response: {
-                            status: 409,
+                            statusCode: 409,
                         },
                     };
 
-                    clientStub.get = jest.fn(async () => {
+                    clientStub = jest.fn(async () => {
                         throw mockError;
                     });
 
                     /* eslint-disable-next-line no-underscore-dangle */
-                    const response = await Client.__get__('makeRequest')(clientStub, 'get', '/Users');
+                    const response = await Client.__get__('makeRequest')(clientStub, 'get', 'Users');
 
                     expect(response).toBe(null);
-                    expect(clientStub.get).toHaveBeenCalledTimes(1);
+                    expect(clientStub).toHaveBeenCalledTimes(1);
                 });
 
                 it('returns the result of the external request if it succeeds', async () => {
+                    const mockResponse = {
+                        body: {
+                            foo: 'bar',
+                        },
+                    };
+                    const clientStub = jest.fn(async () => mockResponse);
                     /* eslint-disable-next-line no-underscore-dangle */
-                    const response = await Client.__get__('makeRequest')(clientStub, 'get', '/Users');
+                    const response = await Client.__get__('makeRequest')(clientStub, 'get', 'Users');
 
-                    expect(response).toBe(mockResponse.data);
-                    expect(clientStub.get).toHaveBeenCalledTimes(1);
+                    expect(response).toBe(mockResponse.body);
+                    expect(clientStub).toHaveBeenCalledTimes(1);
                 });
             });
         });

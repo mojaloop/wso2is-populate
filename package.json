@@ -1,6 +1,6 @@
 {
   "name": "wso2is-populate",
-  "version": "2.0.1",
+  "version": "2.0.2",
   "description": "A standalone script that can be used as a wrapper around an WSO2 Identity Server in order to import users and roles into it.",
   "main": "src/index.js",
   "scripts": {
@@ -29,8 +29,8 @@
   },
   "dependencies": {
     "ajv": "^6.12.6",
-    "axios": "^0.21.1",
     "check-types": "^9.0.1",
-    "dotenv": "^8.0.0"
+    "dotenv": "^8.0.0",
+    "got": "^11.8.2"
   }
 }

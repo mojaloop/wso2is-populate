@@ -18,6 +18,6 @@ describe('users', () => {
         expect(() => load([
             ...defaultUsers,
             ...defaultUsers.map(u => ({ ...u, password: 'yolo' })),
-        ])).toThrow(/^Duplicate user name not allowed/);
+        ])).toThrow(/^Duplicate user username not allowed/);
     });
 });

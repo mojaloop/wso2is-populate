@@ -18,3 +18,13 @@ patches:
         spec:
           imagePullSecrets:
           - name: regcred
+- patch: |-
+    apiVersion: apps/v1
+    kind: Deployment
+    metadata:
+      name: portal-backend
+    spec:
+      template:
+        spec:
+          imagePullSecrets:
+          - name: regcred

@@ -68,14 +68,6 @@ jobs:
         npm ci
         eval "$(echo "$CONF" | tr '\n' ' ') npm run integration-test-authorisation"
 
-    # - name: Ensure we can update NDC with portaladmin
-    #   continue-on-error: true
-    #   run:
-
-    # - name: Ensure we cannot update NDC with portaluser
-    #   continue-on-error: true
-    #   run:
-
     # Print all pod logs here, but also pods individually, so that we don't miss anything, but also
     # so that individual pod logs can easily be explored in job output.
     - name: Print all pod logs

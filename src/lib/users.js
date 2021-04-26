@@ -12,8 +12,10 @@ const load = (users = rawUsers) => {
         items: {
             type: 'object',
             properties: {
-                name: {
+                username: {
                     type: 'string',
+                    // Disallow "admin" as it is WSO2-reserved
+                    pattern: '^(?!admin$)',
                 },
                 password: {
                     type: 'string',
@@ -25,7 +27,7 @@ const load = (users = rawUsers) => {
                     },
                 },
             },
-            required: ['name', 'password', 'roles'],
+            required: ['username', 'password', 'roles'],
         },
     };
 
@@ -37,8 +39,8 @@ const load = (users = rawUsers) => {
     );
 
     assert(
-        (new Set(users.map(user => user.name))).size === users.length,
-        `Duplicate user name not allowed. Users: ${print(users)}`,
+        (new Set(users.map(user => user.username))).size === users.length,
+        `Duplicate user username not allowed. Users: ${print(users)}`,
     );
 
     return users;
