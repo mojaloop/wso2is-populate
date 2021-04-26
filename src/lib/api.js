@@ -293,7 +293,6 @@ const createOAuth2Users = async ({
                 throw err;
             }
             const { status, data } = err.response;
-            // TODO: delete all users before recreating them
             contextLog('WARNING: user already existed, no checks are performed for correct configuration. Handled the following error response:', {
                 status,
                 data,
