@@ -1,14 +1,9 @@
-# TODO: can Skaffold wait until the is-populate job is finished?
 apiVersion: skaffold/v2beta12
 kind: Config
 metadata:
   name: wso-is-populate
 build:
   artifacts:
-  - image: mojaloop/finance-portal-backend-service
-    context: /home/msk/projects/github.com/mojaloop/finance-portal-backend-service
-    docker:
-      dockerfile: Dockerfile
   - image: ghcr.io/modusintegration/wso2is-populate
     docker:
       dockerfile: Dockerfile
