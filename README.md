@@ -1,3 +1,11 @@
+Despair all ye who enter here: this code delicately threads a needle between the fickle threads of
+The Beast from before time. The nameless darkness that lives deep below the consciousness of all
+living beings. The shiver that runs down your spine in the moment your eyes adjust to new light.
+The _WSO2 Identity Server 5.7.0_. Herein lies a sanity-destroying labyrinth of delicate
+workarounds, confusing implementation details, incomplete or incorrect documentation around every
+corner. And worse: SOAP. Go back, now! But if you choose to venture forth, remember this: You.
+Were. Warned.
+
 # WSO2 Identity Server Populate
 A standalone script that can be used to initialise an WSO2 Identity Server with
 * an OAuth2 authentication server 
