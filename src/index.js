@@ -30,26 +30,32 @@ async function populate(conf, users) {
     // whether that's actually more to do with WSO2 leaving vestiges of the application lying
     // around. We _might_ need to wait some time after ostensibly deleting the application and
     // receiving the response from WSO2IS.
+    //
     // Later evidence: it seems that after a while agitating, WSO2 no longer fully deletes an
     // application. It could be a caching issue. Or it could be anything else at all, really.
     // Anything. Don't constrain your search, the cause could be anything, or anywhere. Best to
     // just not use WSO2 at all. Either that, or it's time for the montage where the protagonist
     // becomes stronger to overcome the adversary. Unfortunately, this story will not have a happy
     // ending.
-    // TODO:
+    //
     // Later note: it *might* be that we need to "deregisterOAuthApplication" or something. I.e.,
     // `deleteApplication` is not quite enough. Specifically, when `registerOAuthApplication` has
     // been called, but `createApplication` has not, this creates a state where the application can
-    // neither be created nor deleted. The solution to this problem might have to be
-    // 1. try to delete
-    // 2. try to register
-    // 3. if registration fails, try to createApplication
-    // 4. if createApplication fails, fatal
-    // 5. if createApplication succeeds, proceeed?
+    // neither be created (_registered_?) nor deleted. The solution to this problem might have to
+    // be
+    //   1. try to delete
+    //   2. try to register
+    //   3. if registration fails, try to createApplication
+    //   4. if createApplication fails, fatal
+    //   5. if createApplication succeeds, proceeed?
     // Does this mean we should ignore any "application already exists" errors from register,
     // because they'll only come up if the application has not been truly created, only
     // "registered"? And/or perhaps we could test whether the application exists before trying to
     // delete it?
+    //
+    // Note for the future reader: I ran out of time to implement the above steps, sorry. In my
+    // experience it's not a frequent occurence that register succeeds and create fails. Hopefully
+    // that will be borne out by wider usage of this module.
     await deleteApplication({
         host, name, username, password,
     });
