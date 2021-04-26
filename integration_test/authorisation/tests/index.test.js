@@ -14,6 +14,7 @@ describe('wso2is', () => {
         https: { rejectUnauthorized: false },
     });
     it('issues an oauth token', async () => {
+        const { username, password } = users[0];
         const result = await instance({
             url: 'oauth2/token',
             method: 'post',
@@ -24,9 +25,9 @@ describe('wso2is', () => {
                 client_id: process.env.AUTH_SERVER_CLIENTKEY,
                 client_secret: process.env.AUTH_SERVER_CLIENTSECRET,
                 grant_type: 'password',
-                scope: 'portaloauthprovider',
-                username: 'portaladmin',
-                password: 'mcvV2KYw9eKPqNagjGy6',
+                scope: 'openid',
+                username,
+                password,
             },
         }).json();
         const uuidv4regex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
