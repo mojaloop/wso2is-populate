@@ -25,6 +25,7 @@ async function populate(conf, users) {
         credentials: { username, password },
         application: { name, clientKey, clientSecret },
     } = conf;
+    await instance.deleteUsers(users);
     // TODO: this doesn't seem to very reliably delete the application- although it's unclear
     // whether that's actually more to do with WSO2 leaving vestiges of the application lying
     // around. We _might_ need to wait some time after ostensibly deleting the application and
@@ -53,7 +54,9 @@ async function populate(conf, users) {
         host, name, username, password,
     });
     // Note that we have to call registerOAuthApplication before calling updateApplication.
-    // Otherwise we will not be able to specify the consumer key and secret.
+    // Otherwise we will not be able to specify the consumer key and secret. Why? Well, you're
+    // thinking about it wrong. WSO2 isn't _about_ logic. It's about building character. It's about
+    // uniting against a common enemy. It's bigger than logic.
 
     await registerOAuthApplication({
         host, name, username, password, clientKey, clientSecret,

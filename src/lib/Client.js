@@ -1,3 +1,4 @@
+const assert = require('assert').strict;
 const got = require('got');
 const check = require('check-types');
 const contextLog = require('../lib/contextLog');
@@ -5,6 +6,7 @@ const contextLog = require('../lib/contextLog');
 const REQUEST_METHODS = {
     GET: 'get',
     POST: 'post',
+    DELETE: 'delete',
 };
 
 function validateConfiguration(config) {
@@ -98,6 +100,24 @@ class Client {
         return makeRequest(this.client, REQUEST_METHODS.GET, `Users/${id}`);
     }
 
+    async deleteUsers(usersToDelete) {
+        assert(usersToDelete.every(u => u.username), 'All users to delete must have username property');
+        // WARNING: This request "supports" pagination. We don't supply any pagination parameters
+        // and although it looks as though this means it will not paginate, it's not clear from the
+        // documentation whether it will paginate its response by default. Because of time
+        // constraints, this was not investigated and we assume it does not. If you, the reader,
+        // resent me, the author right now, consider this just one more reason to not use WSO2.
+        const userIdsToDelete = await this.getUsers().then(
+            res => res.Resources
+                .filter(({ userName }) => usersToDelete.some(({ username }) => username === userName))
+                .map(({ id }) => id)
+        );
+
+        return Promise.all(userIdsToDelete.map(
+            id => makeRequest(this.client, REQUEST_METHODS.DELETE, `Users/${id}`)
+        ));
+    }
+
     /**
      * Add a new user into the target WSO2IS by performing a request against:
      * POST https://{host}/{scim2-endpoint}/Users
@@ -118,7 +138,7 @@ class Client {
      * @param {Array} users - The users data to import into WSO2IS.
      * @returns {Array} The added users' data if returned by the API.
      */
-    async addUsers(users) {
+    addUsers(users) {
         return Promise.all(users.map(user => this.addUser(user)));
     }
 

@@ -7,6 +7,24 @@ const contextLog = require('./contextLog');
 //   Accept: application/json
 // when making calls to WSO2 IS IdentityApplicationManagementService. It has the habit of crashing
 // the handler and returning an HTML error page. (Yes, really, boy it's a great piece of software).
+// Or it'll tell you
+//   Transport level information does not match with SOAP Message namespace URI
+// Which really means:
+//   I can't *tell* you that I only some of my methods return json, but only some of my methods
+//   return json. Why? WHY?!
+//     <?xml version='1.337' encoding='UTF-8'?>
+//     <soapenv:Envelope xmlns:soapenv="https://foaas.com/because/wso2">
+//         <soapenv:Body>
+//             <soapenv:Fault>
+//                 <faultcode>
+//                     soapenv:Server
+//                 </faultcode>
+//                 <faultstring>
+//                     That's why
+//                 </faultstring>
+//             </soapenv:Fault>
+//         </soapenv:Body>
+//     </soapenv:Envelope>
 //
 // In fact, it'll have a handler crash and return an HTML 500 if you look at it funny. It *is*
 // weak, but don't feel bad. Be a software darwinist and stop using it. Only the strong survive.
@@ -248,18 +266,18 @@ const createOAuth2Users = async ({
             },
             url: `${host}/services/RemoteUserStoreManagerService`,
             body:
-            `<soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:ser="http://service.ws.um.carbon.wso2.org" xmlns:xsd="http://common.mgt.user.carbon.wso2.org/xsd">
-                <soapenv:Header/>
-                <soapenv:Body>
-                    <ser:addUser>
-                        <ser:userName>${user.username}</ser:userName>
-                        <ser:credential>${user.password}</ser:credential>
-                        ${roleList}
-                        <ser:profileName>default</ser:profileName>
-                        <ser:requirePasswordChange>false</ser:requirePasswordChange>
-                    </ser:addUser>
-                </soapenv:Body>
-            </soapenv:Envelope>`,
+                `<soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:ser="http://service.ws.um.carbon.wso2.org" xmlns:xsd="http://common.mgt.user.carbon.wso2.org/xsd">
+                    <soapenv:Header/>
+                    <soapenv:Body>
+                        <ser:addUser>
+                            <ser:userName>${user.username}</ser:userName>
+                            <ser:credential>${user.password}</ser:credential>
+                            ${roleList}
+                            <ser:profileName>default</ser:profileName>
+                            <ser:requirePasswordChange>false</ser:requirePasswordChange>
+                        </ser:addUser>
+                    </soapenv:Body>
+                </soapenv:Envelope>`,
         };
         try {
             const response = await got(createUserRequest);
@@ -478,7 +496,6 @@ const deleteApplication = async ({
             Accept: '*/*',
             SOAPAction: 'urn:deleteApplication',
             'Content-Type': 'text/xml',
-            // 'Content-Type': 'application/soap+xml;charset=UTF-8',
         },
         url: `${host}/services/IdentityApplicationManagementService`,
         body: `
@@ -514,7 +531,7 @@ const deleteApplication = async ({
             throw err;
         }
         const { statusCode, body } = err.response;
-        contextLog('Application did not exist', {
+        contextLog('Application did not exist. This error is printed here, but ignored by the application.', {
             request: deleteApplicationRequest,
             response: {
                 statusCode,
