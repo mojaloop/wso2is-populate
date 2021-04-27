@@ -1,35 +1,12 @@
 const assert = require('assert').strict;
 const Ajv = require('ajv');
 const rawUsers = require('../imports/users');
+const userSchema = require('../imports/users.schema.json');
 
 const print = s => JSON.stringify(s, null, 2);
 
 const load = (users = rawUsers) => {
     const ajv = new Ajv({ allErrors: true });
-    const userSchema = {
-        type: 'array',
-        uniqueItems: true,
-        items: {
-            type: 'object',
-            properties: {
-                username: {
-                    type: 'string',
-                    // Disallow "admin" as it is WSO2-reserved
-                    pattern: '^(?!admin$)',
-                },
-                password: {
-                    type: 'string',
-                },
-                roles: {
-                    type: 'array',
-                    items: {
-                        type: 'string',
-                    },
-                },
-            },
-            required: ['username', 'password', 'roles'],
-        },
-    };
 
     const validate = ajv.compile(userSchema);
 
