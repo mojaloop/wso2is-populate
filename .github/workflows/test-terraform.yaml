@@ -16,5 +16,5 @@ jobs:
     - run: tree "$NIX_PATH"
     - run: ls /nix/var/nix/profiles
     - run: ls -hAl ~/
-    - run: ls -hAl ~/.nix-profile
+    # - run: ls -hAl ~/.nix-profile
     - run: nix-env -iA default.nix
