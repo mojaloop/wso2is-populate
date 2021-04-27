@@ -15,4 +15,6 @@ jobs:
     - run: which terraform
     - run: tree "$NIX_PATH"
     - run: ls /nix/var/nix/profiles
-    - run: nix-env -i default.nix
+    - run: ls -hAl ~/
+    - run: ls -hAl ~/.nix-profile
+    - run: nix-env -iA default.nix
