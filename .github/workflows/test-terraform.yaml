@@ -11,13 +11,14 @@ jobs:
       with:
         nix_path: nixpkgs=channel:nixos-unstable
     - run: which terraform
-    - run: nix-build
-    - run: echo $PATH
-    # - run: which terraform
+    - run: nix-env -if default.nix
+    # - run: nix-build
+    # - run: echo $PATH
+    - run: which terraform
     # - run: nix-env -i terraform_0_14 # fails
     # - run: nix-env -iA terraform_0_14 # fails
     # - run: nix-env -i nixpkgs.terraform_0_14 # fails
-    - run: nix-env -iA nixpkgs.terraform_0_14 # fails
-    - run: tree "$NIX_PATH"
-    - run: ls /nix/var/nix/profiles
-    - run: ls -hAl ~/
+    # - run: nix-env -iA nixpkgs.terraform_0_14 # fails
+    # - run: tree "$NIX_PATH"
+    # - run: ls /nix/var/nix/profiles
+    # - run: ls -hAl ~/
