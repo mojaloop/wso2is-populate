@@ -5,7 +5,7 @@ variable "wso2_host" {
 
   validation {
     condition     = can(regex("^https?://", var.wso2_host))
-    error_message = "The host URI protocol must be included, and must be HTTP or HTTPS"
+    error_message = "The host URI protocol must be included, and must be HTTP or HTTPS."
   }
 }
 
@@ -29,21 +29,21 @@ variable "wso2_oauth2_application_name" {
 
 variable "auth_server_clientkey" {
   description = "The key that will identify the OAuth2 'application'"
-  type = string
+  type        = string
 
   validation {
     condition     = can(regex("^[a-zA-Z0-9_]{15,30}$", var.auth_server_clientkey))
-    error_message = "The key must match the pattern /^[a-zA-Z0-9_]{15,30}$/"
+    error_message = "The key must match the pattern /^[a-zA-Z0-9_]{15,30}$/."
   }
 }
 
 variable "auth_server_clientsecret" {
   description = "The secret used to authenticate the 'application'"
-  type = string
+  type        = string
 
   validation {
     condition     = can(regex("^[a-zA-Z0-9_]{15,30}$", var.auth_server_clientsecret))
-    error_message = "The secret must match the pattern /^[a-zA-Z0-9_]{15,30}$/"
+    error_message = "The secret must match the pattern /^[a-zA-Z0-9_]{15,30}$/."
   }
 }
 
@@ -53,14 +53,14 @@ variable "portal_users" {
   default     = [
     {
       "username": "portaladmin",
-      "password": "mcvV2KYw9eKPqNagjGy6",
+      "password": "JbtrxeuUbhUFiTig396LhkrAAiXXXmTBeKFYy6tB",
       "roles": [
           "ndc_update"
       ]
     },
     {
       "username": "portaluser",
-      "password": "mcvV2KYw9eKPqNagjGy5",
+      "password": "dHOSPGUQzOhmH0muY4yz9QdTrUdwyH85PkPXewjT",
       "roles": [
       ]
     }
