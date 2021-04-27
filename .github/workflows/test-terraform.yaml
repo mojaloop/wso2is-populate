@@ -26,8 +26,6 @@ jobs:
           terraform/
     - run: terraform show -json plan > plan.json
 
-    - run: jsonschema -i 0 src/imports/users.schema.json
-
     - name: Check the terraform image used is the same as the package.json value
       run: |-
         PACKAGE_VER="$(jq -r '.version' package.json)"
