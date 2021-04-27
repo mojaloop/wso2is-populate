@@ -49,19 +49,19 @@ variable "auth_server_clientsecret" {
 
 variable "portal_users" {
   description = "User details of portal users"
-  type        = list(object({username=string, password=string, roles=list(string)}))
-  default     = [
+  type        = list(object({ username = string, password = string, roles = list(string) }))
+  default = [
     {
-      "username": "portaladmin",
-      "password": "JbtrxeuUbhUFiTig396LhkrAAiXXXmTBeKFYy6tB",
-      "roles": [
-          "ndc_update"
+      "username" : "portaladmin",
+      "password" : "JbtrxeuUbhUFiTig396LhkrAAiXXXmTBeKFYy6tB",
+      "roles" : [
+        "ndc_update"
       ]
     },
     {
-      "username": "portaluser",
-      "password": "dHOSPGUQzOhmH0muY4yz9QdTrUdwyH85PkPXewjT",
-      "roles": [
+      "username" : "portaluser",
+      "password" : "dHOSPGUQzOhmH0muY4yz9QdTrUdwyH85PkPXewjT",
+      "roles" : [
       ]
     }
   ]

@@ -6,7 +6,7 @@ resource "docker_container" "wso2ispopulate" {
   attach          = true
   logs            = true
   must_run        = true
-  env             = [
+  env = [
     "WSO2_HOST=${var.wso2_host}",
     "AUTHENTICATION_CREDENTIALS_USERNAME=${var.admin_user}",
     "AUTHENTICATION_CREDENTIALS_PASSWORD=${var.admin_password}",
