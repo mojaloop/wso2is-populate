@@ -13,3 +13,4 @@ jobs:
     - run: which terraform
     - run: nix-build
     - run: which terraform
+    - run: tree "$NIX_PATH"
