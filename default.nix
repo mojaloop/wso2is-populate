@@ -1,4 +1,8 @@
-{ nixpkgs ? import <nixpkgs> {  } }: nixpkgs.terraform_0_14
+{ nixpkgs ? import <nixpkgs> {  } }: {
+  pkgs = [
+    nixpkgs.terraform_0_14
+  ];
+}
 
 # let
 #   pkgs = [
