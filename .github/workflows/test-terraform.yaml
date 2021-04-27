@@ -14,3 +14,5 @@ jobs:
     - run: nix-build
     - run: which terraform
     - run: tree "$NIX_PATH"
+    - run: ls /nix/var/nix/profiles
+    - run: nix-env -i default.nix
