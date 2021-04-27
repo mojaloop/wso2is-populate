@@ -10,5 +10,6 @@ jobs:
     - uses: cachix/install-nix-action@v13
       with:
         nix_path: nixpkgs=channel:nixos-unstable
+    - run: which terraform
     - run: nix-build
     - run: which terraform
