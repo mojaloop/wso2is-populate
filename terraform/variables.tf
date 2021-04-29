@@ -65,4 +65,9 @@ variable "portal_users" {
       ]
     }
   ]
+
+  validation {
+    condition     = can([for u in var.portal_users : regex("^[\\S]{5,30}$", u.password)])
+    error_message = "All user passwords must match the pattern /^[\\S]{5,30}$/."
+  }
 }
