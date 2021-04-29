@@ -25,8 +25,6 @@
 # }
 
 resource null_resource create_artifacts_return_credentials {
-  for_each = var.test_user_details
-
   provisioner "local-exec" {
 
     command = <<EOT
