@@ -28,6 +28,7 @@ resource "null_resource" "create_artifacts_return_credentials" {
   provisioner "local-exec" {
 
     command = <<EOT
+cd ${path.module}
 echo '${jsonencode(var.portal_users)}' > src/imports/users.json
 npm ci
 WSO2_HOST="${var.wso2_host}" \
