@@ -24,7 +24,7 @@
 #   name = "ghcr.io/modusintegration/wso2is-populate:2.0.2"
 # }
 
-resource null_resource create_artifacts_return_credentials {
+resource "null_resource" "create_artifacts_return_credentials" {
   provisioner "local-exec" {
 
     command = <<EOT
@@ -40,7 +40,7 @@ EOT
   }
 
   provisioner "local-exec" {
-    when = destroy
+    when    = destroy
     command = "echo RESOURCE DESTRUCTION NOT IMPLEMENTED. SKIPPING"
   }
 
