@@ -289,16 +289,20 @@ const createOAuth2Users = async ({
                 },
             });
         } catch (err) {
+            const { status, data } = err.response;
             if (err?.response?.body?.Fault?.faultstring !== 'UserAlreadyExisting:Username already exists in the system. Please pick another username.') {
+                contextLog('Unexpected error response creating user', {
+                    status,
+                    data,
+                });
                 throw err;
             }
-            const { status, data } = err.response;
             contextLog('WARNING: user already existed, no checks are performed for correct configuration. Handled the following error response:', {
                 status,
                 data,
             });
         }
-    }))
+    }));
 };
 
 // https://github.com/wso2/docs-is/blob/1a3e53ddb68fb7ee37eee5bac9c27b14b367c059/en/docs/learn/configuring-a-sp-and-idp-using-service-calls.md
