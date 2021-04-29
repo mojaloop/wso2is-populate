@@ -6,7 +6,6 @@ configMapGenerator:
 - name: wso2-config-files
   files:
   - identity.xml
-  - user-mgt.xml
 
 patches:
 - patch: |-
