@@ -289,17 +289,17 @@ const createOAuth2Users = async ({
                 },
             });
         } catch (err) {
-            const { status, data } = err.response;
+            const { statusCode, body } = err.response;
             if (err?.response?.body?.Fault?.faultstring !== 'UserAlreadyExisting:Username already exists in the system. Please pick another username.') {
                 contextLog('Unexpected error response creating user', {
-                    status,
-                    data,
+                    statusCode,
+                    body,
                 });
                 throw err;
             }
             contextLog('WARNING: user already existed, no checks are performed for correct configuration. Handled the following error response:', {
-                status,
-                data,
+                statusCode,
+                body,
             });
         }
     }));
