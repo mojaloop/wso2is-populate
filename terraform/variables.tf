@@ -53,14 +53,14 @@ variable "portal_users" {
   default = [
     {
       "username" : "portaladmin",
-      "password" : "JbtrxeuUbhUFiTig396LhkrAAiXXXmTBeKFYy6tB",
+      "password" : "Pa2yjP9VlQgaKnz03Y6llR67vtVlE9",
       "roles" : [
         "ndc_update"
       ]
     },
     {
       "username" : "portaluser",
-      "password" : "dHOSPGUQzOhmH0muY4yz9QdTrUdwyH85PkPXewjT",
+      "password" : "ezWx_huS3C8dFhV4cmlNXqNLOLUXad",
       "roles" : [
       ]
     }
