@@ -107,7 +107,6 @@ class Client {
         // documentation whether it will paginate its response by default. Because of time
         // constraints, this was not investigated and we assume it does not. If you, the reader,
         // resent me, the author right now, consider this just one more reason to not use WSO2.
-        console.log(await this.getUsers());
         const userIdsToDelete = await this.getUsers().then(
             res => res.Resources
                 ?.filter(({ userName }) => usersToDelete.some(({ username }) => username === userName))
