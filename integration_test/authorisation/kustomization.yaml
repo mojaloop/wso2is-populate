@@ -1,7 +1,7 @@
 resources:
-- ../manifests/portal-backend
 - ../manifests/wso2is
 - ../manifests/wso2is-populate
+- github.com/partiallyordered/mojaloop-kustomize/base/portal?ref=19eee2fbd9b18ce1a5bab72ca867a3a9cc2a4d08
 
 configMapGenerator:
 - name: oauth-app-credentials
