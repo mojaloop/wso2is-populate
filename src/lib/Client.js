@@ -109,9 +109,9 @@ class Client {
         // resent me, the author right now, consider this just one more reason to not use WSO2.
         const userIdsToDelete = await this.getUsers().then(
             res => res.Resources
-                .filter(({ userName }) => usersToDelete.some(({ username }) => username === userName))
+                ?.filter(({ userName }) => usersToDelete.some(({ username }) => username === userName))
                 .map(({ id }) => id)
-        );
+        ) || [];
 
         return Promise.all(userIdsToDelete.map(
             id => makeRequest(this.client, REQUEST_METHODS.DELETE, `Users/${id}`)

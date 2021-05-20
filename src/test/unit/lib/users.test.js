@@ -17,7 +17,7 @@ describe('users', () => {
     it('does not allow duplicate user names', () => {
         expect(() => load([
             ...defaultUsers,
-            ...defaultUsers.map(u => ({ ...u, password: 'yolo' })),
+            ...defaultUsers.map(u => ({ ...u, password: 'yolo!' })),
         ])).toThrow(/^Duplicate user username not allowed/);
     });
 });

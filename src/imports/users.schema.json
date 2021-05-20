@@ -1,0 +1,28 @@
+{
+  "type": "array",
+  "uniqueItems": true,
+  "items": {
+    "type": "object",
+    "properties": {
+      "username": {
+        "type": "string",
+        "pattern": "^(?!admin$)"
+      },
+      "password": {
+        "type": "string",
+        "pattern": "^[\\S]{5,30}$"
+      },
+      "roles": {
+        "type": "array",
+        "items": {
+          "type": "string"
+        }
+      }
+    },
+    "required": [
+      "username",
+      "password",
+      "roles"
+    ]
+  }
+}
