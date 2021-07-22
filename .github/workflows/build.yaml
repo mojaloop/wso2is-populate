@@ -12,7 +12,8 @@ jobs:
   main:
     runs-on: ubuntu-latest
     steps:
-    - name: Assert package.json version matches release tag
+    - uses: actions/checkout@v2
+      name: Assert package.json version matches release tag
       if: ${{ github.event_name == 'release' }}
       run: |-
         PACKAGE_VER="v$(jq -r '.version' package.json)"
