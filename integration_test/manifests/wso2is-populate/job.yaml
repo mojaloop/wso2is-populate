@@ -15,5 +15,5 @@ spec:
     spec:
       containers:
       - name: job
-        image: ghcr.io/modusintegration/wso2is-populate:latest
+        image: ghcr.io/mojaloop/wso2is-populate:latest
       restartPolicy: OnFailure
