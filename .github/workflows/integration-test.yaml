@@ -28,7 +28,11 @@ jobs:
 
     - name: Start cluster
       run: |-
+        # --k3s-server-arg args according to
+        # https://k3d.io/faq/faq/#solved-nodes-fail-to-start-or-get-stuck-in-notready-state-with-log-nf_conntrack_max-permission-denied
         k3d cluster create \
+          --k3s-server-arg "--kube-proxy-arg=conntrack-max-per-core=0" \
+          --k3s-agent-arg "--kube-proxy-arg=conntrack-max-per-core=0" \
           --kubeconfig-update-default \
           --kubeconfig-switch-context \
           --image=rancher/k3s:v1.20.5-k3s1 \
