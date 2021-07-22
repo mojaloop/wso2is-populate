@@ -85,7 +85,7 @@ npm run test
         See regions with `doctl compute region list`.
     3.  Minikube. The author cannot speak to this solution.
     4.  Don't bother, instead push your changes to a branch and check out the result of the
-        ![integration test run](https://github.com/modusintegration/wso2is-populate/actions)
+        ![integration test run](https://github.com/mojaloop/wso2is-populate/actions)
 
 2.  If your cluster is well-supported by Skaffold (such as `k3d`, perhaps Minikube?), your image
     will be built and pushed direct to the cluster nodes when you run:
@@ -129,7 +129,7 @@ skaffold run -d your-registry.io --force
         context: /your/local/path/to/local/clone/of/finance-portal-backend-service
         docker:
           dockerfile: Dockerfile
-      - image: ghcr.io/modusintegration/wso2is-populate
+      - image: ghcr.io/mojaloop/wso2is-populate
         docker:
           dockerfile: Dockerfile
     ```

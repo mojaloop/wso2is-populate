@@ -120,7 +120,7 @@ const getToken = async ({
  * Create a WSO2 application, otherwise known as a service provider.
  *
  * The created application will be configured to use OAuth2 inbound authentication as per the steps
- * here: https://github.com/modusintegration/finance-portal-settlements/tree/8d489300b0f31031059f538c5b486fc90b57ccf7#run-services.
+ * here: https://github.com/mojaloop/finance-portal-v2-ui/tree/8d489300b0f31031059f538c5b486fc90b57ccf7#run-services.
  * Note that this function should make that documentation redundant, therefore it will likely be
  * removed.
  *
@@ -222,7 +222,7 @@ const getApplication = async ({
  * with createOAuth2ServiceProvider above.
  *
  * The created users will be configured to use OAuth2 inbound authentication as per the steps here:
- * https://github.com/modusintegration/finance-portal-settlements/tree/8d489300b0f31031059f538c5b486fc90b57ccf7#run-services.
+ * here: https://github.com/mojaloop/finance-portal-v2-ui/tree/8d489300b0f31031059f538c5b486fc90b57ccf7#run-services.
  * Note that this function should make that documentation redundant, therefore it will likely be
  * removed.
  *

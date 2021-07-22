@@ -4,7 +4,7 @@ metadata:
   name: wso-is-populate
 build:
   artifacts:
-  - image: ghcr.io/modusintegration/wso2is-populate
+  - image: ghcr.io/mojaloop/wso2is-populate
     docker:
       dockerfile: Dockerfile
 deploy:
