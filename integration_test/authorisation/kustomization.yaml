@@ -22,6 +22,8 @@ patches:
     metadata:
       name: wso2is-populate
     spec:
+      # Sometimes WSO2 is painfully slow to start.
+      backoffLimit: 100
       template:
         spec:
           containers:
